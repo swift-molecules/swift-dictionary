@@ -29,7 +29,7 @@ public import Index_Primitives
 // MARK: - Insert (displaced-value hand-back — move-only honesty)
 // ============================================================================
 
-extension Dictionary where S: ~Copyable {
+extension __Dictionary where S: ~Copyable {
     /// Sets the value for a key; returns the DISPLACED old value if the key was
     /// present, or `nil` on a fresh insertion. On replacement the stored entry keeps
     /// its ORIGINAL key instance (direct column).
@@ -81,7 +81,7 @@ extension Dictionary where S: ~Copyable {
 // MARK: - Lookup
 // ============================================================================
 
-extension Dictionary where S: ~Copyable {
+extension __Dictionary where S: ~Copyable {
     /// Whether a value exists for the key (direct column).
     ///
     /// - Complexity: O(1) average
@@ -151,7 +151,7 @@ extension Dictionary where S: ~Copyable {
 // indexed seam's re-index guard takes its cheap no-change branch)
 // ============================================================================
 
-extension Dictionary where S: ~Copyable {
+extension __Dictionary where S: ~Copyable {
     /// Calls the closure with mutable access to the value for the key; returns its
     /// result, or `nil` if the key is absent (direct column).
     ///
@@ -193,7 +193,7 @@ extension Dictionary where S: ~Copyable {
 // MARK: - Remove (insertion order preserved)
 // ============================================================================
 
-extension Dictionary where S: ~Copyable {
+extension __Dictionary where S: ~Copyable {
     /// Removes the entry for the key; returns its value, or `nil` if absent
     /// (direct column).
     ///
@@ -266,7 +266,7 @@ extension Dictionary where S: ~Copyable {
 // MARK: - Iteration (insertion order) + direct clone
 // ============================================================================
 
-extension Dictionary where S: ~Copyable {
+extension __Dictionary where S: ~Copyable {
     /// Calls the closure for each key–value pair, in insertion order (direct column).
     ///
     /// - Complexity: O(n)

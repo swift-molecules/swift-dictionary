@@ -11,8 +11,6 @@
 
 public import Buffer_Primitive
 public import Buffer_Linear_Primitive
-public import Buffer_Protocol_Primitives
-public import Store_Protocol_Primitives
 public import Storage_Primitive
 public import Storage_Contiguous_Primitives
 public import Memory_Heap_Primitives
@@ -28,12 +26,12 @@ public import Index_Primitives
 /// HASHED storage COLUMN of key-projected entries (the ADT-families tranche reshape,
 /// 2026-06-10; the two-`Buffer.Slab`-planes shape is retired).
 ///
-/// The ratified two-column design: `Dictionary` is generic over `S`, and **copyability
+/// The ratified two-column design: `__Dictionary` is generic over `S`, and **copyability
 /// flows from the column** (S5):
 ///
 /// ```swift
-/// Dictionary<                       Hash.Indexed<Buffer<Storage<…System>.Contiguous<Hash.Entry<Key, FD >>>.Linear>>   // zero-cost MOVE-ONLY (default)
-/// Dictionary<Shared<Hash.Entry<…>, Hash.Indexed<Buffer<Storage<…System>.Contiguous<Hash.Entry<Key, Int>>>.Linear>>>  // explicit CoW value semantics
+/// __Dictionary<                       Hash.Indexed<Buffer<Storage<…System>.Contiguous<Hash.Entry<Key, FD >>>.Linear>>   // zero-cost MOVE-ONLY (default)
+/// __Dictionary<Shared<Hash.Entry<…>, Hash.Indexed<Buffer<Storage<…System>.Contiguous<Hash.Entry<Key, Int>>>.Linear>>>  // explicit CoW value semantics
 /// ```
 ///
 /// The column is `Hash.Indexed<Dense>` with `Dense.Element == Hash.Entry<Key, Value>`:
@@ -45,11 +43,19 @@ public import Index_Primitives
 /// (`withMutableValue(forKey:)` — mutability ruling (a)). Iteration (`forEach`) is
 /// insertion-ordered.
 ///
-/// This shadows `Swift.Dictionary`. Use `Swift.Dictionary` for the stdlib type when
-/// both are in scope.
+/// ## Carrier (hoisted per [API-IMPL-009]/[PKG-NAME-006])
+///
+/// `__Dictionary` is the bound-free carrier ([DS-025]): its column parameter `S` is
+/// bound `~Copyable` **only**; every capability (observability, the keyed surface,
+/// construction/growth) attaches by conditional `@inlinable` extension keyed on the
+/// seams the column conforms. The PUBLIC spelling of the family is the front-door
+/// alias `Dictionary<K, V>` (declared in `Dictionary.FrontDoor.swift`, [DS-028]); the
+/// hoisted name never appears in consumer signatures. `Dictionary<K, V>` shadows
+/// `Swift.Dictionary` — use `Swift.Dictionary` for the stdlib type when both are in
+/// scope.
+@_documentation(visibility: public)
 @frozen
-public struct Dictionary<S: Store.`Protocol` & Buffer.`Protocol` & ~Copyable>: ~Copyable
-where S.Count == Index_Primitives.Index<S.Element>.Count, S.Element: Hash.Key {
+public struct __Dictionary<S: ~Copyable>: ~Copyable {
 
     /// The ordered hashed entry column — move-only (the default ownership column) or
     /// a `Shared` CoW column. The ADT is a thin keyed discipline over it; it carries
@@ -72,16 +78,16 @@ where S.Count == Index_Primitives.Index<S.Element>.Count, S.Element: Hash.Key {
 
 // MARK: - Conditional Conformances (co-located per [COPY-FIX-004])
 
-/// The S5 chain: `Dictionary<Shared<Hash.Entry<K, V>, B>>` is `Copyable` exactly when
+/// The S5 chain: `__Dictionary<Shared<Hash.Entry<K, V>, B>>` is `Copyable` exactly when
 /// the entry is.
-extension Dictionary: Copyable where S: Copyable {}
+extension __Dictionary: Copyable where S: Copyable {}
 
-extension Dictionary: Sendable where S: Sendable & ~Copyable {}
+extension __Dictionary: Sendable where S: Sendable & ~Copyable {}
 
 // MARK: - Column-pinned construction ([MEM-COPY-017]: the split lives in `Shared`'s
-// pinned constructor pair; the `Dictionary` forms pick the column)
+// pinned constructor pair; the `__Dictionary` forms pick the column)
 
-extension Dictionary where S: ~Copyable {
+extension __Dictionary where S: ~Copyable {
     /// Creates an empty MOVE-ONLY dictionary (the default ownership column).
     @inlinable
     public init<K: Hash.Key & ~Copyable, V: ~Copyable>(

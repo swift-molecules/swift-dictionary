@@ -14,8 +14,9 @@
 //
 // NB: the pre-tranche `Dictionary Primitives Core` / `Dictionary Slab Primitives`
 // targets are RETIRED (ADT-families leg 8, 2026-06-10) — the two-Slab-planes
-// dictionary is replaced by the column-generic `Dictionary<S>` over
-// `Hash.Indexed` with key-projected `Hash.Entry` elements. The column packages
+// dictionary is replaced by the column-generic carrier `__Dictionary<S>` (front
+// door `Dictionary<K, V>`) over `Hash.Indexed` with key-projected `Hash.Entry`
+// elements. The column packages
 // are ordinary dependencies, never re-exported (zero cross-package re-exports).
 
 @_exported public import Dictionary_Primitive

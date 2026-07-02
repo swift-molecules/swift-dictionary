@@ -31,8 +31,8 @@ private typealias HeapStorage<E: ~Copyable> =
 private typealias EntryColumn<K: Hash.Key & ~Copyable, V: ~Copyable> =
     Hash.Indexed<Buffer<HeapStorage<Hash.Entry<K, V>>>.Linear>
 
-private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> = Dictionary<EntryColumn<K, V>>
-private typealias CoWDictionary<K: Hash.Key, V> = Dictionary<Shared<Hash.Entry<K, V>, EntryColumn<K, V>>>
+private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> = Dictionary<K, V>
+private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<Shared<Hash.Entry<K, V>, EntryColumn<K, V>>>
 
 // MARK: - Fixtures: the Copyable key (controlled hash group) + the censused values
 // (+ the hashed bound on the hoisted move-only fixture, for the key-lifecycle test)

@@ -9,9 +9,9 @@
 //
 // ===----------------------------------------------------------------------===//
 
-// Dictionary Primitive declares the base type: the column-generic
-// `struct Dictionary<S>` template plus its element vocabulary `Hash.Entry`
-// (the key-projected pair). The pinned membership surface lives in the
-// umbrella target's `Dictionary+Columns.swift`. No re-exports here — the
-// column packages are ordinary dependencies ([MOD-005]: umbrellas re-export
-// in-package targets only).
+// Dictionary Primitive declares the hoisted carrier `struct __Dictionary<S: ~Copyable>`
+// ([DS-025]) plus the canonical front door `Dictionary<K, V>` ([DS-028],
+// `Dictionary.FrontDoor.swift`) and its element vocabulary `Hash.Entry` (the
+// key-projected pair). The pinned membership surface lives in the umbrella target's
+// `Dictionary+Columns.swift`. No re-exports here — the column packages are ordinary
+// dependencies ([MOD-005]: umbrellas re-export in-package targets only).
