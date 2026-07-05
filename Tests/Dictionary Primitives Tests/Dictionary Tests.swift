@@ -11,7 +11,7 @@ import Storage_Primitive
 import Storage_Contiguous_Primitives
 import Memory_Heap_Primitives
 import Memory_Allocator_Primitive
-import Shared_Primitive
+import Ownership_Shared_Primitive
 import Index_Primitives
 import Tagged_Primitives_Standard_Library_Integration
 import Ordinal_Primitives_Standard_Library_Integration
@@ -27,7 +27,7 @@ private typealias EntryColumn<K: Hash.Key & ~Copyable, V: ~Copyable> =
     Hash.Indexed<Buffer<HeapStorage<Hash.Entry<K, V>>>.Linear>
 
 private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> = Dictionary<K, V>
-private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<Shared<Hash.Entry<K, V>, EntryColumn<K, V>>>
+private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>>
 
 // MARK: - [DS-024] + coherence (the Shared entry composite is this family's NEW column)
 
@@ -37,7 +37,7 @@ struct DictionaryColumnLawTests {
     @Test
     func `the shared entry column obeys the seam ledger laws`() {
         let violations = Seam.Ledger.violations(
-            makeEmpty: { Shared(EntryColumn<Int, Int>(minimumCapacity: Index<Hash.Entry<Int, Int>>.Count(4))) },
+            makeEmpty: { Ownership.Shared(EntryColumn<Int, Int>(minimumCapacity: Index<Hash.Entry<Int, Int>>.Count(4))) },
             element: { Hash.Entry(key: $0, value: $0) }
         )
         #expect(violations.isEmpty, "\(violations)")
@@ -241,7 +241,7 @@ struct DictionaryTeardownTests {
     func `the boxed move-only lane tears down via the box drain`() {
         DictProbe2.reset()
         do {
-            var d = __Dictionary<Shared<Hash.Entry<Int, DictItem2>, EntryColumn<Int, DictItem2>>>(minimumCapacity: 4)
+            var d = __Dictionary<Ownership.Shared<Hash.Entry<Int, DictItem2>, EntryColumn<Int, DictItem2>>>(minimumCapacity: 4)
             d.insert(key: 7, value: DictItem2(70))
             d.insert(key: 8, value: DictItem2(80))
             let n = d.count

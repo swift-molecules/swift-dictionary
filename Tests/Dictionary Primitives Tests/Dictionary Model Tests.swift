@@ -8,7 +8,7 @@ import Storage_Primitive
 import Storage_Contiguous_Primitives
 import Memory_Heap_Primitives
 import Memory_Allocator_Primitive
-import Shared_Primitive
+import Ownership_Shared_Primitive
 import Index_Primitives
 import Tagged_Primitives_Standard_Library_Integration
 import Ordinal_Primitives_Standard_Library_Integration
@@ -32,7 +32,7 @@ private typealias EntryColumn<K: Hash.Key & ~Copyable, V: ~Copyable> =
     Hash.Indexed<Buffer<HeapStorage<Hash.Entry<K, V>>>.Linear>
 
 private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> = Dictionary<K, V>
-private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<Shared<Hash.Entry<K, V>, EntryColumn<K, V>>>
+private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>>
 
 // MARK: - Fixtures: the Copyable key (controlled hash group) + the censused values
 // (+ the hashed bound on the hoisted move-only fixture, for the key-lifecycle test)

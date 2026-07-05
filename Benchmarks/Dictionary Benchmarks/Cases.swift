@@ -20,7 +20,7 @@ import Buffer_Linear_Primitive
 import Storage_Contiguous_Primitives
 import Memory_Heap_Primitives
 import Memory_Allocator_Primitive
-import Shared_Primitive
+import Ownership_Shared_Primitive
 import Index_Primitives
 import Tagged_Primitives_Standard_Library_Integration
 import Ordinal_Primitives
@@ -34,7 +34,7 @@ typealias EntryColumn<K: Hash.Key & ~Copyable, V: ~Copyable> =
 
 typealias MoveDict<K: Hash.Key & ~Copyable, V: ~Copyable> = Dictionary<EntryColumn<K, V>>
 
-typealias CoWDict<K: Hash.Key, V> = Dictionary<Shared<Hash.Entry<K, V>, EntryColumn<K, V>>>
+typealias CoWDict<K: Hash.Key, V> = Dictionary<Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>>
 
 extension Bench {
     /// The order-preserving remove curve uses denser scales (see set-ordered).

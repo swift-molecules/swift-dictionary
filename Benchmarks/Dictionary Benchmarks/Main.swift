@@ -19,7 +19,7 @@ enum Main {
         print("=== swift-dictionary-primitives — family-tier benchmark (W2) ===")
         print("config: sizes=\(Bench.sizes) curveSizes=\(Bench.curveSizes) samples=\(Bench.samples) warmup=\(Bench.warmup)")
         print("targets/sample: element=\(Bench.elementOpsTarget) structure=\(Bench.structureOpsTarget) copiedSlots=\(Bench.copiedSlotsTarget)")
-        print("subjects: tower.direct=Dictionary<Hash.Indexed<…>> (flat) · tower.cow=Dictionary<Shared<Entry,…>> (flat) · stdlib=Swift.Dictionary (UNORDERED baseline)")
+        print("subjects: tower.direct=Dictionary<Hash.Indexed<…>> (flat) · tower.cow=Dictionary<Ownership.Shared<Entry,…>> (flat) · stdlib=Swift.Dictionary (UNORDERED baseline)")
         print("churn: one op = one remove+insert pair (flat); wipe rows measure the FIXED removeAll Shared door (c51d879)")
         print("")
         Bench.globalWarmup()

@@ -17,7 +17,7 @@ public import Memory_Heap_Primitives
 public import Memory_Allocator_Primitive
 public import Hash_Indexed_Primitive
 import Hash_Primitives
-public import Shared_Primitive
+public import Ownership_Shared_Primitive
 public import Index_Primitives
 
 // MARK: - Dictionary (the ADT tier — generic over the ORDERED HASHED entry column)
@@ -31,7 +31,7 @@ public import Index_Primitives
 ///
 /// ```swift
 /// __Dictionary<                       Hash.Indexed<Buffer<Storage<…System>.Contiguous<Hash.Entry<Key, FD >>>.Linear>>   // zero-cost MOVE-ONLY (default)
-/// __Dictionary<Shared<Hash.Entry<…>, Hash.Indexed<Buffer<Storage<…System>.Contiguous<Hash.Entry<Key, Int>>>.Linear>>>  // explicit CoW value semantics
+/// __Dictionary<Ownership.Shared<Hash.Entry<…>, Hash.Indexed<Buffer<Storage<…System>.Contiguous<Hash.Entry<Key, Int>>>.Linear>>>  // explicit CoW value semantics
 /// ```
 ///
 /// The column is `Hash.Indexed<Dense>` with `Dense.Element == Hash.Entry<Key, Value>`:
@@ -78,7 +78,7 @@ public struct __Dictionary<S: ~Copyable>: ~Copyable {
 
 // MARK: - Conditional Conformances (co-located per [COPY-FIX-004])
 
-/// The S5 chain: `__Dictionary<Shared<Hash.Entry<K, V>, B>>` is `Copyable` exactly when
+/// The S5 chain: `__Dictionary<Ownership.Shared<Hash.Entry<K, V>, B>>` is `Copyable` exactly when
 /// the entry is.
 extension __Dictionary: Copyable where S: Copyable {}
 
@@ -102,8 +102,8 @@ extension __Dictionary where S: ~Copyable {
     public init<K: Hash.Key, V>(
         minimumCapacity: Index_Primitives.Index<Hash.Entry<K, V>>.Count = .zero
     )
-    where S == Shared<Hash.Entry<K, V>, Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear>> {
-        self.init(store: Shared(
+    where S == Ownership.Shared<Hash.Entry<K, V>, Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear>> {
+        self.init(store: Ownership.Shared(
             Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear>(minimumCapacity: minimumCapacity)
         ))
     }
@@ -114,8 +114,8 @@ extension __Dictionary where S: ~Copyable {
     public init<K: Hash.Key & ~Copyable, V: ~Copyable>(
         minimumCapacity: Index_Primitives.Index<Hash.Entry<K, V>>.Count = .zero
     )
-    where S == Shared<Hash.Entry<K, V>, Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear>> {
-        self.init(store: Shared(
+    where S == Ownership.Shared<Hash.Entry<K, V>, Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear>> {
+        self.init(store: Ownership.Shared(
             Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear>(minimumCapacity: minimumCapacity)
         ))
     }
