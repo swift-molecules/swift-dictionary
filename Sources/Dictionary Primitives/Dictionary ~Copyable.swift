@@ -12,10 +12,10 @@
 // The COLUMN-GENERIC dictionary surface: the count vocabulary rides the template
 // bound; the keyed ops pin per column (`Dictionary+Columns.swift`) — they reach the
 // engine, which only the concrete composite exposes.
-public import Dictionary_Primitive
 public import Buffer_Protocol_Primitives
-public import Store_Protocol_Primitives
+public import Dictionary_Primitive
 public import Index_Primitives
+public import Store_Protocol_Primitives
 
 extension __Dictionary where S: ~Copyable, S: Store.`Protocol` & Buffer.`Protocol` {
     /// The number of key–value entries.

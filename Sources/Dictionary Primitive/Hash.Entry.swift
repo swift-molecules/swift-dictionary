@@ -9,8 +9,8 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Hash_Primitives
 public import Hash_Indexed_Primitive
+public import Hash_Primitives
 
 // MARK: - Hash.Entry (the key-projected pair — the dictionary column's element)
 
@@ -30,7 +30,9 @@ extension Hash {
     /// (a nested type would capture `S`, whose element is this entry — circular).
     @frozen
     public struct Entry<Key: Hash.Key & ~Copyable, Value: ~Copyable>: ~Copyable {
-        /// The key of this entry. Immutable — the entry's hash identity.
+        /// The key of this entry.
+        ///
+        /// Immutable — the entry's hash identity.
         public let key: Key
 
         /// The value of this entry.

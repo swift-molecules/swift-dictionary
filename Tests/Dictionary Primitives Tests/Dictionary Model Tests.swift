@@ -1,17 +1,17 @@
-import Dictionary_Primitives
-import Hash_Table_Primitives_Test_Support
-public import Buffer_Primitives_Test_Support
-import Hash_Primitives
-import Buffer_Primitive
 import Buffer_Linear_Primitive
-import Storage_Primitive
-import Storage_Contiguous_Primitives
-import Memory_Heap_Primitives
-import Memory_Allocator_Primitive
-import Ownership_Shared_Primitive
+import Buffer_Primitive
+public import Buffer_Primitives_Test_Support
+import Dictionary_Primitives
+import Hash_Primitives
+import Hash_Table_Primitives_Test_Support
 import Index_Primitives
-import Tagged_Primitives_Standard_Library_Integration
+import Memory_Allocator_Primitive
+import Memory_Heap_Primitives
 import Ordinal_Primitives_Standard_Library_Integration
+import Ownership_Shared_Primitive
+import Storage_Contiguous_Primitives
+import Storage_Primitive
+import Tagged_Primitives_Standard_Library_Integration
 import Testing
 
 // The W3 dictionary model suite (arc-2): seeded op streams through the keyed
@@ -31,6 +31,10 @@ private typealias HeapStorage<E: ~Copyable> =
 private typealias EntryColumn<K: Hash.Key & ~Copyable, V: ~Copyable> =
     Hash.Indexed<Buffer<HeapStorage<Hash.Entry<K, V>>>.Linear>
 
+// `Dictionary<K, V>` here is the institute's own typealias (shadows `Swift.Dictionary`);
+// `[K: V]` sugar is hardwired to `Swift.Dictionary` and would silently change the type.
+// swift-format-ignore: UseShorthandTypeNames
+// swiftlint:disable:next syntactic_sugar
 private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> = Dictionary<K, V>
 private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>>
 
@@ -38,10 +42,12 @@ private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<Ownership.Shared<
 // (+ the hashed bound on the hoisted move-only fixture, for the key-lifecycle test)
 
 extension Model.Element.Tracked: @retroactive Hash.`Protocol` {
+    /// Hashes by `group` only — the fixture's controlled hash-collision group.
     public borrowing func hash(into hasher: inout Hasher) {
         hasher.combine(group)
     }
 
+    /// Equality by identity (`id`), independent of the hash-collision `group`.
     public static func == (lhs: borrowing Model.Element.Tracked, rhs: borrowing Model.Element.Tracked) -> Bool {
         lhs.id == rhs.id
     }
@@ -51,16 +57,11 @@ private struct Key: Hash.`Protocol` {
     let id: Int
     let group: Int
 
-    init(id: Int, group: Int) {
-        self.id = id
-        self.group = group
-    }
-
     borrowing func hash(into hasher: inout Hasher) {
         hasher.combine(group)
     }
 
-    static func == (lhs: borrowing Key, rhs: borrowing Key) -> Bool {
+    static func == (lhs: borrowing Self, rhs: borrowing Self) -> Bool {
         lhs.id == rhs.id
     }
 }
@@ -361,9 +362,11 @@ private struct FleetStream {
 
     init(seed: UInt64, census: Model.Census) {
         var rng = Model.Random(seed: seed)
-        self.siblings = [CoWDictionary<Key, Value>(
-            minimumCapacity: Index<Hash.Entry<Key, Value>>.Count(UInt(rng.below(9)))
-        )]
+        self.siblings = [
+            CoWDictionary<Key, Value>(
+                minimumCapacity: Index<Hash.Entry<Key, Value>>.Count(UInt(rng.below(9)))
+            )
+        ]
         self.models = [Reference()]
         self.rng = rng
         self.verdict = Model.Verdict(seed: seed)
