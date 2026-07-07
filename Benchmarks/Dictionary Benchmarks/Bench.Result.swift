@@ -16,7 +16,7 @@
 extension Bench {
     /// One measured case: a shape × subject × scale with its full sample vector.
     struct Result {
-        /// Shape identifier, e.g. `append.zero`.
+        /// Shape identifier, such as `append.zero`.
         let name: Swift.String
         /// Measured subject: `tower.direct`, `tower.cow`, or `stdlib`.
         let subject: Swift.String
@@ -57,6 +57,11 @@ extension Bench.Result {
     /// Machine-parseable record line (one per case; raw logs feed the report).
     var record: Swift.String {
         let samplesList = perOpNs.map { Bench.fixed($0, 3) }.joined(separator: ",")
+        // Single-line-by-design: this is a machine-parseable log record consumed
+        // line-by-line by downstream benchmark report tooling. LineLength cannot
+        // be suppressed by name here (swift-format quirk, verified empirically);
+        // blanket ignore is safe since no other formatting concern applies.
+        // swift-format-ignore
         return #"BENCH {"name":"\#(name)","subject":"\#(subject)","n":\#(n),"opsPerBatch":\#(opsPerBatch),"median_ns_per_op":\#(Bench.fixed(median, 3)),"min":\#(Bench.fixed(min, 3)),"max":\#(Bench.fixed(max, 3)),"cv_pct":\#(Bench.fixed(cvPercent, 1)),"samples":[\#(samplesList)]}"#
     }
 }

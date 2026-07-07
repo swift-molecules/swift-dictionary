@@ -49,6 +49,7 @@ enum Bench {
     // MARK: - Optimizer barriers
 
     /// Accumulated sink state; printed at exit so no measured work is dead.
+    ///
     /// `Mutex` keeps the barrier safe-construct-only; `sink` runs once per
     /// batch (never inside a measured loop body), so the lock cost is noise.
     private static let drain = Mutex<Int>(0)
@@ -108,6 +109,7 @@ enum Bench {
     }
 
     /// Runs `batch` untimed `warmup` times, then `samples` timed batches.
+    ///
     /// Returns per-op nanoseconds, one entry per sample. The closure is
     /// non-escaping by design: move-only state may live in the caller's frame.
     static func sample(opsPerBatch: Int, _ batch: () -> Void) -> [Double] {
