@@ -36,7 +36,7 @@ private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<Ownership.Shared<
 // MARK: - [DS-024] + coherence (the Shared entry composite is this family's NEW column)
 
 @Suite
-struct DictionaryColumnLawTests {
+struct `Dictionary Column Law Tests` {
 
     @Test
     func `the shared entry column obeys the seam ledger laws`() {
@@ -72,7 +72,7 @@ extension Hash.Indexed<Buffer<HeapStorage<Hash.Entry<Int, Int>>>.Linear> {
 // MARK: - Core keyed ops (the direct column)
 
 @Suite(.serialized)
-struct DictionaryCoreTests {
+struct `Dictionary Core Tests` {
 
     @Test
     func `insert, displaced hand-back, contains, removeValue, counts`() {
@@ -157,7 +157,7 @@ struct DictionaryCoreTests {
 // MARK: - CoW value semantics (the Shared composite column)
 
 @Suite(.serialized)
-struct DictionaryCoWTests {
+struct `Dictionary Co W Tests` {
 
     @Test
     func `copies share until mutation; inserts detach through the box`() {
@@ -222,7 +222,7 @@ struct DictionaryCoWTests {
 // MARK: - Move-only values + teardown
 
 @Suite(.serialized)
-struct DictionaryTeardownTests {
+struct `Dictionary Teardown Tests` {
 
     @Test
     func `move-only values flow through and tear down exactly once`() {
@@ -269,7 +269,9 @@ private struct DictItem: ~Copyable {
     deinit { DictProbe.recordDestroy(id) }
 }
 
-private enum DictProbe {
+private enum DictProbe {}
+
+extension DictProbe {
     nonisolated(unsafe) static var _destroyed: [Int] = []
     static func reset() { unsafe _destroyed = [] }
     static func recordDestroy(_ id: Int) { unsafe _destroyed.append(id) }
@@ -282,7 +284,9 @@ private struct DictItem2: ~Copyable {
     deinit { DictProbe2.recordDestroy(id) }
 }
 
-private enum DictProbe2 {
+private enum DictProbe2 {}
+
+extension DictProbe2 {
     nonisolated(unsafe) static var _destroyed: [Int] = []
     static func reset() { unsafe _destroyed = [] }
     static func recordDestroy(_ id: Int) { unsafe _destroyed.append(id) }
@@ -292,7 +296,7 @@ private enum DictProbe2 {
 // MARK: - Sendable smoke
 
 @Suite
-struct DictionarySendableTests {
+struct `Dictionary Sendable Tests` {
 
     @Test
     func `sendable composes through both columns`() {
