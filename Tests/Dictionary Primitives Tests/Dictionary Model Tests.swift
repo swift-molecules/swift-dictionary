@@ -325,13 +325,11 @@ extension DirectStream {
 
     mutating func run() {
         let operations = Model.operations(default: 800)
-        var op = 0
-        while op < operations, verdict.isClean {
+        for op in 0..<operations where verdict.isClean {
             step()
             if Model.shouldAudit(op: op, of: operations) {
                 verdict.diverged(audit())
             }
-            op += 1
         }
     }
 
