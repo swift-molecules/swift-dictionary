@@ -31,7 +31,9 @@ private typealias EntryColumn<K: Hash.Key & ~Copyable, V: ~Copyable> =
 // swift-format-ignore: UseShorthandTypeNames
 // swiftlint:disable:next syntactic_sugar
 private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> = Dictionary<K, V>
-private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>>
+private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<
+    Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>
+>
 
 // MARK: - [DS-024] + coherence (the Shared entry composite is this family's NEW column)
 
@@ -41,7 +43,11 @@ struct `Dictionary Column Law Tests` {
     @Test
     func `the shared entry column obeys the seam ledger laws`() {
         let violations = Seam.Ledger.violations(
-            makeEmpty: { Ownership.Shared(EntryColumn<Int, Int>(minimumCapacity: Index<Hash.Entry<Int, Int>>.Count(4))) },
+            makeEmpty: {
+                Ownership.Shared(
+                    EntryColumn<Int, Int>(minimumCapacity: Index<Hash.Entry<Int, Int>>.Count(4))
+                )
+            },
             element: { Hash.Entry(key: $0, value: $0) }
         )
         #expect(violations.isEmpty, "\(violations)")
@@ -252,7 +258,9 @@ struct `Dictionary Teardown Tests` {
     func `the boxed move-only lane tears down via the box drain`() {
         DictProbe2.reset()
         do {
-            var d = __Dictionary<Ownership.Shared<Hash.Entry<Int, DictItem2>, EntryColumn<Int, DictItem2>>>(minimumCapacity: 4)
+            var d = __Dictionary<
+                Ownership.Shared<Hash.Entry<Int, DictItem2>, EntryColumn<Int, DictItem2>>
+            >(minimumCapacity: 4)
             d.insert(key: 7, value: DictItem2(70))
             d.insert(key: 8, value: DictItem2(80))
             let n = d.count
