@@ -94,7 +94,11 @@ extension __Dictionary where S: ~Copyable {
     public init<K: Hash.Key & ~Copyable, V: ~Copyable>(
         minimumCapacity: Index_Primitives.Index<Hash.Entry<K, V>>.Count = .zero
     )
-    where S == Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear> {
+    where
+        S == Hash.Indexed<
+            Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear
+        >
+    {
         self.init(store: S(minimumCapacity: minimumCapacity))
     }
 
@@ -103,10 +107,20 @@ extension __Dictionary where S: ~Copyable {
     public init<K: Hash.Key, V>(
         minimumCapacity: Index_Primitives.Index<Hash.Entry<K, V>>.Count = .zero
     )
-    where S == Ownership.Shared<Hash.Entry<K, V>, Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear>> {
+    where
+        S == Ownership.Shared<
+            Hash.Entry<K, V>,
+            Hash.Indexed<
+                Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear
+            >
+        >
+    {
         self.init(
             store: Ownership.Shared(
-                Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear>(minimumCapacity: minimumCapacity)
+                Hash.Indexed<
+                    Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>
+                        .Linear
+                >(minimumCapacity: minimumCapacity)
             )
         )
     }
@@ -117,10 +131,20 @@ extension __Dictionary where S: ~Copyable {
     public init<K: Hash.Key & ~Copyable, V: ~Copyable>(
         minimumCapacity: Index_Primitives.Index<Hash.Entry<K, V>>.Count = .zero
     )
-    where S == Ownership.Shared<Hash.Entry<K, V>, Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear>> {
+    where
+        S == Ownership.Shared<
+            Hash.Entry<K, V>,
+            Hash.Indexed<
+                Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear
+            >
+        >
+    {
         self.init(
             store: Ownership.Shared(
-                Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear>(minimumCapacity: minimumCapacity)
+                Hash.Indexed<
+                    Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>
+                        .Linear
+                >(minimumCapacity: minimumCapacity)
             )
         )
     }

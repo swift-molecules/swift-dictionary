@@ -41,4 +41,8 @@ public import Storage_Contiguous_Primitives
 /// This shadows `Swift.Dictionary`. Use `Swift.Dictionary` for the stdlib type when
 /// both are in scope.
 public typealias Dictionary<K: Hash.Key & ~Copyable, V: ~Copyable> =
-    __Dictionary<Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear>>
+    __Dictionary<
+        Hash.Indexed<
+            Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear
+        >
+    >
