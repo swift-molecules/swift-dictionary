@@ -14,42 +14,23 @@ import Storage_Primitive
 import Tagged_Primitives_Standard_Library_Integration
 import Testing
 
-// The W3 dictionary model suite (arc-2): seeded op streams through the keyed
-// doors on BOTH columns, against an insertion-ordered (key, value) reference.
-// `insert` is an UPSERT: a displaced old value comes back, the entry keeps its
-// position AND its original key instance. `withMutableValue` is the seam
-// guard's no-change branch end-to-end (Hash.Entry hashes the KEY only, so value
-// mutation is hash-stable by construction — the GOAL's keyed-door guard
-// coverage). The direct lane censuses VALUES (move-only fixture; upsert
-// displacements, mutation replacements, removals, wipes, and the final drop all
-// account to the end multiset). The Shared lane is the sibling fleet with
-// refcounted censused values. Shape constraint: B10.
-
 private typealias HeapStorage<E: ~Copyable> =
     Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E>
 
 private typealias EntryColumn<K: Hash.Key & ~Copyable, V: ~Copyable> =
     Hash.Indexed<Buffer<HeapStorage<Hash.Entry<K, V>>>.Linear>
 
-// `Dictionary<K, V>` here is the institute's own typealias (shadows `Swift.Dictionary`);
-// `[K: V]` sugar is hardwired to `Swift.Dictionary` and would silently change the type.
-// swift-format-ignore: UseShorthandTypeNames
-// swiftlint:disable:next syntactic_sugar
-private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> = Dictionary<K, V>
+private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> = [K: V]
 private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<
     Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>
 >
 
-// MARK: - Fixtures: the Copyable key (controlled hash group) + the censused values
-// (+ the hashed bound on the hoisted move-only fixture, for the key-lifecycle test)
-
 extension Model.Element.Tracked: @retroactive Hash.`Protocol` {
-    /// Hashes by `group` only — the fixture's controlled hash-collision group.
+
     public borrowing func hash(into hasher: inout Hasher) {
         hasher.combine(group)
     }
 
-    /// Equality by identity (`id`), independent of the hash-collision `group`.
     public static func == (
         lhs: borrowing Model.Element.Tracked,
         rhs: borrowing Model.Element.Tracked
@@ -88,8 +69,6 @@ private final class Value {
         census.record(death: serial)
     }
 }
-
-// MARK: - The reference model: insertion-ordered (key, value) pairs
 
 private struct Reference {
     var entries: [(key: Int, group: Int, value: Int)] = []
@@ -130,8 +109,6 @@ extension Reference {
         }
     }
 }
-
-// MARK: - The direct stream (move-only censused values)
 
 private struct DirectStream: ~Copyable {
     var dictionary: MoveDictionary<Key, Model.Element.Tracked>
@@ -258,8 +235,6 @@ extension DirectStream {
         }
     }
 
-    /// The keyed mutation door — the seam guard's no-change branch end-to-end
-    /// (the entry's hash is its KEY; replacing the value must not re-index).
     mutating func mutateValue() {
         let index = rng.below(model.entries.count)
         let entry = model.entries[index]
@@ -370,7 +345,7 @@ private func runDirectStream(seed: UInt64) -> Model.Verdict {
     let census = Model.Census()
     var stream = DirectStream(seed: seed, census: census)
     stream.run()
-    var verdict = stream.finish()  // the dictionary dies here
+    var verdict = stream.finish()
 
     if !census.isExact {
         verdict.findings.append(
@@ -379,8 +354,6 @@ private func runDirectStream(seed: UInt64) -> Model.Verdict {
     }
     return verdict
 }
-
-// MARK: - The Shared (CoW) sibling fleet (refcounted censused values)
 
 private struct FleetStream {
     var siblings: [CoWDictionary<Key, Value>]
@@ -609,7 +582,7 @@ private func runFleetStream(seed: UInt64) -> Model.Verdict {
         var stream = FleetStream(seed: seed, census: census)
         stream.run()
         verdict = stream.verdict
-    }  // every sibling dies here; value refcounts fall to zero
+    }
 
     if !census.isExact {
         verdict.findings.append(
@@ -618,8 +591,6 @@ private func runFleetStream(seed: UInt64) -> Model.Verdict {
     }
     return verdict
 }
-
-// MARK: - The suites
 
 @Suite
 struct `Dictionary Model` {
@@ -655,14 +626,14 @@ extension `Dictionary Model`.Unit {
             dictionary.insert(
                 key: Model.Element.Tracked(id: 7, group: 1, census: census),
                 value: 100
-            )  // key serial 0
+            )
             let displaced = dictionary.insert(
                 key: Model.Element.Tracked(id: 7, group: 1, census: census),
                 value: 200
-            )  // key serial 1
+            )
             #expect(displaced == 100)
             let diedMid = census.died.sorted()
-            #expect(diedMid == [1])  // the probe key died; the ORIGINAL key survives in the entry
+            #expect(diedMid == [1])
             let read = dictionary.withValue(
                 forKey: Model.Element.Tracked(id: 7, group: 1, census: census)
             ) { (value: borrowing Int) in
@@ -699,8 +670,6 @@ extension `Dictionary Model`.`Edge Case` {
         #expect(values == [100, 101, 999, 103, 104])
     }
 
-    // The ASK-W3-A regression gate (trapped pre-fix; the [MEM-COPY-017] pair split
-    // keeps the post-wipe box strategy-carrying).
     @Test
     func `forking after removeAll keeps both siblings independently mutable`() {
         let census = Model.Census()
@@ -710,7 +679,7 @@ extension `Dictionary Model`.`Edge Case` {
         first.insert(key: Key(id: 1, group: 0), value: Value(id: 10, census: census))
         first.removeAll()
         var second = first
-        // traps pre-fix
+
         second.insert(key: Key(id: 2, group: 0), value: Value(id: 20, census: census))
         first.insert(key: Key(id: 3, group: 0), value: Value(id: 30, census: census))
         let secondHasTheirs = second.contains(key: Key(id: 2, group: 0))

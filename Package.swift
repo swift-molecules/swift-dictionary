@@ -12,13 +12,12 @@ let package = Package(
         .visionOS(.v27),
     ],
     products: [
-        // MARK: - Base type
+
         .library(
             name: "Dictionary Primitive",
             targets: ["Dictionary Primitive"]
         ),
 
-        // MARK: - Umbrella
         .library(
             name: "Dictionary Primitives",
             targets: ["Dictionary Primitives"]
@@ -72,8 +71,6 @@ let package = Package(
     ],
     targets: [
 
-        // MARK: - Base type (struct Dictionary<S>: the ADT over the ordered hashed
-        // entry column + the key-projected `Hash.Entry` element vocabulary)
         .target(
             name: "Dictionary Primitive",
             dependencies: [
@@ -105,7 +102,6 @@ let package = Package(
             ]
         ),
 
-        // MARK: - Umbrella (the pinned keyed surface + counts; re-exports the base)
         .target(
             name: "Dictionary Primitives",
             dependencies: [
@@ -138,7 +134,6 @@ let package = Package(
             ]
         ),
 
-        // MARK: - Tests
         .testTarget(
             name: "Dictionary Primitives Tests",
             dependencies: [

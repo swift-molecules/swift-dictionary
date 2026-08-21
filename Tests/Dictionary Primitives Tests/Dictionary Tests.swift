@@ -17,25 +17,16 @@ import Storage_Primitive
 import Tagged_Primitives_Standard_Library_Integration
 import Testing
 
-// The column-keyed dictionary suite: the ordered hashed entry column direct +
-// Shared-wrapped. Entries hash by KEY only (`Hash.Entry` is key-projected).
-
 private typealias HeapStorage<E: ~Copyable> =
     Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E>
 
 private typealias EntryColumn<K: Hash.Key & ~Copyable, V: ~Copyable> =
     Hash.Indexed<Buffer<HeapStorage<Hash.Entry<K, V>>>.Linear>
 
-// `Dictionary<K, V>` here is the institute's own typealias (shadows `Swift.Dictionary`);
-// `[K: V]` sugar is hardwired to `Swift.Dictionary` and would silently change the type.
-// swift-format-ignore: UseShorthandTypeNames
-// swiftlint:disable:next syntactic_sugar
-private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> = Dictionary<K, V>
+private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> = [K: V]
 private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<
     Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>
 >
-
-// MARK: - [DS-024] + coherence (the Shared entry composite is this family's NEW column)
 
 @Suite
 struct `Dictionary Column Law Tests` {
@@ -63,7 +54,7 @@ struct `Dictionary Column Law Tests` {
         }
         _ = direct.removeValue(forKey: 9)
         _ = direct.removeValue(forKey: 0)
-        direct.insert(key: 6, value: 99)  // replacement: value swaps behind a stable key
+        direct.insert(key: 6, value: 99)
         let violations = direct.take().checkCoherence()
         #expect(violations.isEmpty, "\(violations)")
     }
@@ -74,8 +65,6 @@ extension Hash.Indexed<Buffer<HeapStorage<Hash.Entry<Int, Int>>>.Linear> {
         Hash.Coherence.violations(self)
     }
 }
-
-// MARK: - Core keyed ops (the direct column)
 
 @Suite(.serialized)
 struct `Dictionary Core Tests` {
@@ -132,7 +121,7 @@ struct `Dictionary Core Tests` {
             i += 1
         }
         _ = d.removeValue(forKey: 5)
-        d.insert(key: 3, value: 999)  // replacement keeps the slot's order
+        d.insert(key: 3, value: 999)
         var keys: [Int] = []
         d.forEach { key, _ in keys.append(key) }
         #expect(keys == [0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11])
@@ -160,8 +149,6 @@ struct `Dictionary Core Tests` {
     }
 }
 
-// MARK: - CoW value semantics (the Shared composite column)
-
 @Suite(.serialized)
 struct `Dictionary Co W Tests` {
 
@@ -169,8 +156,8 @@ struct `Dictionary Co W Tests` {
     func `copies share until mutation; inserts detach through the box`() {
         var a = CoWDictionary<Int, Int>(minimumCapacity: 4)
         a.insert(key: 1, value: 10)
-        let b = a  // S5: Dictionary is Copyable because S is
-        a.insert(key: 2, value: 20)  // withUnique(consuming:) detaches first
+        let b = a
+        a.insert(key: 2, value: 20)
         let mine = a.count
         let theirs = b.count
         #expect(mine == Index<Hash.Entry<Int, Int>>.Count(2))
@@ -225,8 +212,6 @@ struct `Dictionary Co W Tests` {
     }
 }
 
-// MARK: - Move-only values + teardown
-
 @Suite(.serialized)
 struct `Dictionary Teardown Tests` {
 
@@ -239,7 +224,7 @@ struct `Dictionary Teardown Tests` {
             d.insert(key: 2, value: DictItem(20))
             if let displaced: DictItem = d.insert(key: 1, value: DictItem(11)) {
                 let id = displaced.id
-                #expect(id == 10)  // the displaced OLD value hands back
+                #expect(id == 10)
             } else {
                 Issue.record("expected the displaced value")
             }
@@ -251,7 +236,7 @@ struct `Dictionary Teardown Tests` {
             }
         }
         let all = DictProbe.destroyedSorted
-        #expect(all == [10, 11, 20])  // displaced + live-at-teardown + removed
+        #expect(all == [10, 11, 20])
     }
 
     @Test
@@ -300,8 +285,6 @@ extension DictProbe2 {
     static func recordDestroy(_ id: Int) { unsafe _destroyed.append(id) }
     static var destroyedSorted: [Int] { unsafe _destroyed.sorted() }
 }
-
-// MARK: - Sendable smoke
 
 @Suite
 struct `Dictionary Sendable Tests` {

@@ -1,18 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-primitives open source project
-//
-// Copyright (c) 2024-2026 Coen ten Thije Boonkkamp and the swift-primitives project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
-// The COLUMN-PINNED keyed surface; the `Shared` forms cross the box via the
-// gate-first scoped accessors ([MEM-OWN-017]: inserted entries thread as consuming
-// closure PARAMETERS). Lookups go through the engine's projected-key doors — the
-// key probes the index planes directly; no entry is constructed to search.
 public import Buffer_Linear_Primitive
 public import Buffer_Primitive
 public import Dictionary_Primitive
@@ -25,17 +10,8 @@ public import Ownership_Shared_Primitive
 public import Storage_Contiguous_Primitives
 public import Storage_Primitive
 
-// ============================================================================
-// MARK: - Insert (displaced-value hand-back — move-only honesty)
-// ============================================================================
-
 extension __Dictionary where S: ~Copyable {
-    /// Sets the value for a key; returns the DISPLACED old value if the key was
-    /// present, or `nil` on a fresh insertion.
-    ///
-    /// On replacement the stored entry keeps its ORIGINAL key instance (direct column).
-    ///
-    /// - Complexity: O(1) amortized
+
     @inlinable
     @discardableResult
     public mutating func insert<K: Hash.Key & ~Copyable, V: ~Copyable>(
@@ -62,9 +38,6 @@ extension __Dictionary where S: ~Copyable {
         return nil
     }
 
-    /// Sets the value for a key (`Shared` column; uniqueness restored first).
-    ///
-    /// - Complexity: O(1) amortized (O(`capacity`) when a copy must be made first)
     @inlinable
     @discardableResult
     public mutating func insert<K: Hash.Key & ~Copyable, V: ~Copyable>(
@@ -88,8 +61,7 @@ extension __Dictionary where S: ~Copyable {
                     candidate == probe
                 }
             ) {
-                // Key present: swap the new value into the stored entry (its original
-                // key stays), hand the old value back through the probe entry's shell.
+
                 var displaced = consume entry
                 swap(&column[slot].value, &displaced.value)
                 return displaced.take()
@@ -100,14 +72,8 @@ extension __Dictionary where S: ~Copyable {
     }
 }
 
-// ============================================================================
-// MARK: - Lookup
-// ============================================================================
-
 extension __Dictionary where S: ~Copyable {
-    /// Whether a value exists for the key (direct column).
-    ///
-    /// - Complexity: O(1) average
+
     @inlinable
     public func contains<K: Hash.Key & ~Copyable, V: ~Copyable>(key: borrowing K) -> Bool
     where
@@ -124,9 +90,6 @@ extension __Dictionary where S: ~Copyable {
         ) != nil
     }
 
-    /// Whether a value exists for the key (`Shared` column; no gate — reads never detach).
-    ///
-    /// - Complexity: O(1) average
     @inlinable
     public func contains<K: Hash.Key & ~Copyable, V: ~Copyable>(key: borrowing K) -> Bool
     where
@@ -148,10 +111,6 @@ extension __Dictionary where S: ~Copyable {
         }
     }
 
-    /// Calls the closure with the value for the key; returns its result, or `nil`
-    /// if the key is absent (direct column).
-    ///
-    /// - Complexity: O(1) average, plus the closure
     @inlinable
     public func withValue<K: Hash.Key & ~Copyable, V: ~Copyable, R>(
         forKey key: borrowing K,
@@ -176,9 +135,6 @@ extension __Dictionary where S: ~Copyable {
         return body(store[slot].value)
     }
 
-    /// Calls the closure with the value for the key (`Shared` column; no gate).
-    ///
-    /// - Complexity: O(1) average, plus the closure
     @inlinable
     public func withValue<K: Hash.Key & ~Copyable, V: ~Copyable, R>(
         forKey key: borrowing K,
@@ -209,16 +165,8 @@ extension __Dictionary where S: ~Copyable {
     }
 }
 
-// ============================================================================
-// MARK: - Value mutation (mutability ruling (a): keys are hash-stable, so the
-// indexed seam's re-index guard takes its cheap no-change branch)
-// ============================================================================
-
 extension __Dictionary where S: ~Copyable {
-    /// Calls the closure with mutable access to the value for the key; returns its
-    /// result, or `nil` if the key is absent (direct column).
-    ///
-    /// - Complexity: O(1) average, plus the closure
+
     @inlinable
     public mutating func withMutableValue<K: Hash.Key & ~Copyable, V: ~Copyable, R>(
         forKey key: borrowing K,
@@ -243,10 +191,6 @@ extension __Dictionary where S: ~Copyable {
         return body(&store[slot].value)
     }
 
-    /// Calls the closure with mutable access to the value for the key (`Shared`
-    /// column; uniqueness restored first).
-    ///
-    /// - Complexity: O(1) average (O(`capacity`) when a copy must be made first), plus the closure
     @inlinable
     public mutating func withMutableValue<K: Hash.Key & ~Copyable, V: ~Copyable, R>(
         forKey key: borrowing K,
@@ -277,15 +221,8 @@ extension __Dictionary where S: ~Copyable {
     }
 }
 
-// ============================================================================
-// MARK: - Remove (insertion order preserved)
-// ============================================================================
-
 extension __Dictionary where S: ~Copyable {
-    /// Removes the entry for the key; returns its value, or `nil` if absent
-    /// (direct column).
-    ///
-    /// - Complexity: O(n) from the removal point (order preservation)
+
     @inlinable
     public mutating func removeValue<K: Hash.Key & ~Copyable, V: ~Copyable>(
         forKey key: borrowing K
@@ -309,7 +246,6 @@ extension __Dictionary where S: ~Copyable {
         return entry.take()
     }
 
-    /// Removes the entry for the key (`Shared` column; uniqueness restored first).
     @inlinable
     public mutating func removeValue<K: Hash.Key & ~Copyable, V: ~Copyable>(
         forKey key: borrowing K
@@ -338,7 +274,6 @@ extension __Dictionary where S: ~Copyable {
         }
     }
 
-    /// Removes all entries (direct column).
     @inlinable
     public mutating func removeAll<K: Hash.Key & ~Copyable, V: ~Copyable>(
         keepingCapacity: Bool = true
@@ -351,13 +286,6 @@ extension __Dictionary where S: ~Copyable {
         store.removeAll(keepingCapacity: keepingCapacity)
     }
 
-    /// Removes all entries (`Shared` column; detaches to a fresh box — siblings keep
-    /// theirs).
-    ///
-    /// The Copyable half of the [MEM-COPY-017] pair: with a Copyable entry,
-    /// `Ownership.Shared(_:)` resolves to the strategy-CARRYING init, so the replacement box
-    /// stays forkable (ASK-W3-A: a single `~Copyable`-bounded overload selected the
-    /// strategy-less init, and removeAll → copy → mutate trapped the uniqueness gate).
     @inlinable
     public mutating func removeAll<K: Hash.Key, V>(keepingCapacity: Bool = true)
     where
@@ -377,12 +305,6 @@ extension __Dictionary where S: ~Copyable {
         )
     }
 
-    /// Removes all entries (`Shared` column, move-only elements).
-    ///
-    /// The replacement box is statically unique and carries NO clone strategy — lawful
-    /// here: with a move-only entry the dictionary itself is move-only (S5: copyability
-    /// flows from the column), so this box can never be forked and a strategy is
-    /// unreachable.
     @inlinable
     public mutating func removeAll<K: Hash.Key & ~Copyable, V: ~Copyable>(
         keepingCapacity: Bool = true
@@ -405,47 +327,40 @@ extension __Dictionary where S: ~Copyable {
     }
 }
 
-// ============================================================================
-// MARK: - Iteration (insertion order)
-// ============================================================================
-
-// swift-format-ignore
-// AmbiguousTrailingClosureOverload false-positive: the two `forEach` overloads
-// below are distinguished by mutually exclusive `where S == ...` constraints, so
-// exactly one applies for any concrete `S` — the same column-pinned pattern as
-// `insert`/`contains`/`remove`/`removeAll` above (unflagged, since those don't
-// take a closure). Split into its own extension so the ignore doesn't also
-// blanket-cover `clone()` below.
 extension __Dictionary where S: ~Copyable {
-    /// Calls the closure for each key–value pair, in insertion order (direct column).
-    ///
-    /// - Complexity: O(n)
+
     @inlinable
-    public func forEach<K: Hash.Key & ~Copyable, V: ~Copyable>(_ body: (borrowing K, borrowing V) -> Void)
-    where S == Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear> {
+    public func forEach<K: Hash.Key & ~Copyable, V: ~Copyable>(
+        _ body: (borrowing K, borrowing V) -> Void
+    )
+    where
+        S == Hash.Indexed<
+            Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear
+        >
+    {
         store.forEach { entry in body(entry.key, entry.value) }
     }
 
-    /// Calls the closure for each key–value pair (`Shared` column; no gate).
-    ///
-    /// - Complexity: O(n)
     @inlinable
-    public func forEach<K: Hash.Key & ~Copyable, V: ~Copyable>(_ body: (borrowing K, borrowing V) -> Void)
-    where S == Ownership.Shared<Hash.Entry<K, V>, Hash.Indexed<Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear>> {
+    public func forEach<K: Hash.Key & ~Copyable, V: ~Copyable>(
+        _ body: (borrowing K, borrowing V) -> Void
+    )
+    where
+        S == Ownership.Shared<
+            Hash.Entry<K, V>,
+            Hash.Indexed<
+                Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear
+            >
+        >
+    {
         store.withColumn { column in
             column.forEach { entry in body(entry.key, entry.value) }
         }
     }
 }
 
-// ============================================================================
-// MARK: - Direct clone
-// ============================================================================
-
 extension __Dictionary where S: ~Copyable {
-    /// Returns an independent copy (direct column).
-    ///
-    /// - Complexity: O(`capacity`)
+
     @inlinable
     public func clone<K: Hash.Key, V>() -> Self
     where
