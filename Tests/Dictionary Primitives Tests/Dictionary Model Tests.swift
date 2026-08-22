@@ -20,7 +20,8 @@ private typealias HeapStorage<E: ~Copyable> =
 private typealias EntryColumn<K: Hash.Key & ~Copyable, V: ~Copyable> =
     Hash.Indexed<Buffer<HeapStorage<Hash.Entry<K, V>>>.Linear>
 
-private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> = [K: V]
+private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> =
+    Dictionary_Primitives.Dictionary<K, V>
 private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<
     Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>
 >
