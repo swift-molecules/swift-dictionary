@@ -2,12 +2,12 @@ public import Buffer_Linear_Primitive
 public import Buffer_Primitive
 public import Dictionary_Primitive
 public import Hash_Indexed_Primitive
-import Hash_Primitives
-public import Index_Primitives
+import Hash
+public import Index
 public import Memory_Allocator_Primitive
-public import Memory_Heap_Primitives
+public import Memory_Heap
 public import Ownership_Shared_Primitive
-public import Storage_Contiguous_Primitives
+public import Storage_Contiguous
 public import Storage_Primitive
 
 extension __Dictionary where S: ~Copyable {
@@ -296,7 +296,7 @@ extension __Dictionary where S: ~Copyable {
             >
         >
     {
-        let capacity: Index_Primitives.Index<Hash.Entry<K, V>>.Count =
+        let capacity: Index.Index<Hash.Entry<K, V>>.Count =
             keepingCapacity ? store.capacity : .zero
         self.store = Ownership.Shared(
             Hash.Indexed<
@@ -317,7 +317,7 @@ extension __Dictionary where S: ~Copyable {
             >
         >
     {
-        let capacity: Index_Primitives.Index<Hash.Entry<K, V>>.Count =
+        let capacity: Index.Index<Hash.Entry<K, V>>.Count =
             keepingCapacity ? store.capacity : .zero
         self.store = Ownership.Shared(
             Hash.Indexed<

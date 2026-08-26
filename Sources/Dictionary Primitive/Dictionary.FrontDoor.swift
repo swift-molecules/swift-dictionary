@@ -1,10 +1,10 @@
 public import Buffer_Linear_Primitive
 public import Buffer_Primitive
 public import Hash_Indexed_Primitive
-import Hash_Primitives
+import Hash
 public import Memory_Allocator_Primitive
-public import Memory_Heap_Primitives
-public import Storage_Contiguous_Primitives
+public import Memory_Heap
+public import Storage_Contiguous
 
 public typealias Dictionary<K: Hash.Key & ~Copyable, V: ~Copyable> =
     __Dictionary<

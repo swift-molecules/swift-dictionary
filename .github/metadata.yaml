@@ -1,8 +1,7 @@
 # .github/metadata.yaml
-# Triaged by AI-assisted bulk pass (2026-04-29).
 description: "Dictionary<S> — an insertion-ordered hash dictionary generic over its storage column; copyability flows from the column (move-only by default, opt-in copy-on-write via Shared)."
 topics:
-  - primitives
+  - molecules
   - dictionary
 homepage: "https://swift-institute.org"
 readme:

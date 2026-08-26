@@ -1,20 +1,20 @@
 import Buffer_Linear_Primitive
 import Buffer_Primitive
-import Buffer_Primitives_Test_Support
-import Dictionary_Primitives
+import Buffer_Test_Support
+import Dictionary
 import Hash_Indexed_Primitive
-import Hash_Primitives
-import Hash_Primitives_Standard_Library_Integration
+import Hash
+import Hash_Standard_Library_Integration
 import Hash_Table_Primitive
-import Hash_Table_Primitives_Test_Support
-import Index_Primitives
+import Hash_Table_Test_Support
+import Index
 import Memory_Allocator_Primitive
-import Memory_Heap_Primitives
-import Ordinal_Primitives_Standard_Library_Integration
+import Memory_Heap
+import Ordinal_Standard_Library_Integration
 import Ownership_Shared_Primitive
-import Storage_Contiguous_Primitives
+import Storage_Contiguous
 import Storage_Primitive
-import Tagged_Primitives_Standard_Library_Integration
+import Tagged_Standard_Library_Integration
 import Testing
 
 private typealias HeapStorage<E: ~Copyable> =
@@ -24,7 +24,7 @@ private typealias EntryColumn<K: Hash.Key & ~Copyable, V: ~Copyable> =
     Hash.Indexed<Buffer<HeapStorage<Hash.Entry<K, V>>>.Linear>
 
 private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> =
-    Dictionary_Primitives.Dictionary<K, V>
+    Dictionary.Dictionary<K, V>
 private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<
     Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>
 >
