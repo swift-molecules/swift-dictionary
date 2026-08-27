@@ -1,6 +1,5 @@
 public import Buffer_Linear_Primitive
 public import Buffer_Primitive
-public import Dictionary_Primitive
 public import Hash_Indexed_Primitive
 import Hash
 public import Index

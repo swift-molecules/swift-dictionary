@@ -1,5 +1,4 @@
 public import Buffer_Protocol
-public import Dictionary_Primitive
 public import Index
 public import Store_Protocol
 
