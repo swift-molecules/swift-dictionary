@@ -3,7 +3,7 @@ public import Buffer_Primitive
 public import Hash_Indexed_Primitive
 import Hash
 public import Memory_Allocator_Primitive
-public import Memory_Heap
+public import Memory
 public import Storage_Contiguous
 
 public typealias Dictionary<K: Hash.Key & ~Copyable, V: ~Copyable> =
