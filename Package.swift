@@ -75,7 +75,7 @@ let package = Package(
                     package: "swift-ownership-shared"
                 ),
                 .product(name: "Buffer Primitive", package: "swift-buffer"),
-                .product(name: "Buffer Protocol", package: "swift-buffer"),
+                .product(name: "Buffer", package: "swift-buffer"),
                 .product(
                     name: "Buffer Linear Primitive",
                     package: "swift-buffer-linear"
