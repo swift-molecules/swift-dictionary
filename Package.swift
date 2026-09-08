@@ -26,6 +26,11 @@ let package = Package(
         ),
     ],
     dependencies: [
+        .package(url: "https://github.com/swift-molecules/swift-storage-memory.git", branch: "main"),
+        .package(
+            url: "https://github.com/swift-atoms/swift-store.git",
+            branch: "main"
+        ),
         .package(
             url: "https://github.com/swift-molecules/swift-index.git",
             branch: "main"
@@ -43,7 +48,7 @@ let package = Package(
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-molecules/swift-buffer.git",
+            url: "https://github.com/swift-atoms/swift-buffer.git",
             branch: "main"
         ),
         .package(
@@ -51,7 +56,7 @@ let package = Package(
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-molecules/swift-storage.git",
+            url: "https://github.com/swift-atoms/swift-storage.git",
             branch: "main"
         ),
         .package(
@@ -74,21 +79,21 @@ let package = Package(
                     name: "Ownership Shared Primitive",
                     package: "swift-ownership-shared"
                 ),
-                .product(name: "Buffer Primitive", package: "swift-buffer"),
+                .product(name: "Buffer", package: "swift-buffer"),
                 .product(name: "Buffer", package: "swift-buffer"),
                 .product(
                     name: "Buffer Linear Primitive",
                     package: "swift-buffer-linear"
                 ),
-                .product(name: "Storage Primitive", package: "swift-storage"),
+                .product(name: "Storage", package: "swift-storage"),
                 .product(
-                    name: "Storage Contiguous",
-                    package: "swift-storage"
+                    name: "Storage Memory",
+                    package: "swift-storage-memory"
                 ),
-                .product(name: "Store Protocol", package: "swift-storage"),
+                .product(name: "Store", package: "swift-store"),
                 .product(name: "Memory", package: "swift-memory"),
                 .product(
-                    name: "Memory Allocator Primitive",
+                    name: "Memory Allocator",
                     package: "swift-memory-allocation"
                 ),
                 .product(name: "Index", package: "swift-index"),
