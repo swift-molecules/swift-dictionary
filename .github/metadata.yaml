@@ -1,4 +1,3 @@
-# .github/metadata.yaml
 description: "Dictionary<S> — an insertion-ordered hash dictionary generic over its storage column; copyability flows from the column (move-only by default, opt-in copy-on-write via Shared)."
 topics:
   - molecules
