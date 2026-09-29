@@ -1,19 +1,21 @@
 public import Buffer_Linear_Primitive
 public import Buffer
 public import Hash_Indexed_Primitive
-import Hash
+public import Hash_Table_Primitive
 public import Index
 public import Memory_Allocator
 public import Memory
 public import Ownership_Shared_Primitive
-public import Storage_Memory
 public import Storage
+public import Memory_Allocator_Protocol
+public import Cardinal
+public import Tagged
 
 extension __Dictionary where S: ~Copyable {
 
     @inlinable
     @discardableResult
-    public mutating func insert<K: Hash.Key & ~Copyable, V: ~Copyable>(
+    public mutating func insert<K: Swift.Hashable & ~Copyable, V: ~Copyable>(
         key: consuming K,
         value: consuming V
     ) -> V?
@@ -23,7 +25,7 @@ extension __Dictionary where S: ~Copyable {
         >
     {
         if let slot = store.position(
-            matching: key.hashValue,
+            matching: Hash.Value(_unchecked: key.hashValue),
             context: key,
             equals: { (candidate: borrowing Hash.Entry<K, V>, probe: borrowing K) in
                 candidate.key == probe
@@ -39,7 +41,7 @@ extension __Dictionary where S: ~Copyable {
 
     @inlinable
     @discardableResult
-    public mutating func insert<K: Hash.Key & ~Copyable, V: ~Copyable>(
+    public mutating func insert<K: Swift.Hashable & ~Copyable, V: ~Copyable>(
         key: consuming K,
         value: consuming V
     ) -> V?
@@ -53,7 +55,7 @@ extension __Dictionary where S: ~Copyable {
     {
         store.withUnique(consuming: Hash.Entry(key: key, value: value)) { column, entry in
             if let slot = column.position(
-                matching: entry.hashValue,
+                matching: Hash.Value(_unchecked: entry.hashValue),
                 context: entry,
                 equals: {
                     (candidate: borrowing Hash.Entry<K, V>, probe: borrowing Hash.Entry<K, V>) in
@@ -74,14 +76,14 @@ extension __Dictionary where S: ~Copyable {
 extension __Dictionary where S: ~Copyable {
 
     @inlinable
-    public func contains<K: Hash.Key & ~Copyable, V: ~Copyable>(key: borrowing K) -> Bool
+    public func contains<K: Swift.Hashable & ~Copyable, V: ~Copyable>(key: borrowing K) -> Bool
     where
         S == Hash.Indexed<
             Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear
         >
     {
         store.position(
-            matching: key.hashValue,
+            matching: Hash.Value(_unchecked: key.hashValue),
             context: key,
             equals: { (candidate: borrowing Hash.Entry<K, V>, probe: borrowing K) in
                 candidate.key == probe
@@ -90,7 +92,7 @@ extension __Dictionary where S: ~Copyable {
     }
 
     @inlinable
-    public func contains<K: Hash.Key & ~Copyable, V: ~Copyable>(key: borrowing K) -> Bool
+    public func contains<K: Swift.Hashable & ~Copyable, V: ~Copyable>(key: borrowing K) -> Bool
     where
         S == Ownership.Shared<
             Hash.Entry<K, V>,
@@ -101,7 +103,7 @@ extension __Dictionary where S: ~Copyable {
     {
         store.withColumn { column in
             column.position(
-                matching: key.hashValue,
+                matching: Hash.Value(_unchecked: key.hashValue),
                 context: key,
                 equals: { (candidate: borrowing Hash.Entry<K, V>, probe: borrowing K) in
                     candidate.key == probe
@@ -111,7 +113,7 @@ extension __Dictionary where S: ~Copyable {
     }
 
     @inlinable
-    public func withValue<K: Hash.Key & ~Copyable, V: ~Copyable, R>(
+    public func withValue<K: Swift.Hashable & ~Copyable, V: ~Copyable, R>(
         forKey key: borrowing K,
         _ body: (borrowing V) -> R
     ) -> R?
@@ -122,7 +124,7 @@ extension __Dictionary where S: ~Copyable {
     {
         guard
             let slot = store.position(
-                matching: key.hashValue,
+                matching: Hash.Value(_unchecked: key.hashValue),
                 context: key,
                 equals: { (candidate: borrowing Hash.Entry<K, V>, probe: borrowing K) in
                     candidate.key == probe
@@ -135,7 +137,7 @@ extension __Dictionary where S: ~Copyable {
     }
 
     @inlinable
-    public func withValue<K: Hash.Key & ~Copyable, V: ~Copyable, R>(
+    public func withValue<K: Swift.Hashable & ~Copyable, V: ~Copyable, R>(
         forKey key: borrowing K,
         _ body: (borrowing V) -> R
     ) -> R?
@@ -150,7 +152,7 @@ extension __Dictionary where S: ~Copyable {
         store.withColumn { column -> R? in
             guard
                 let slot = column.position(
-                    matching: key.hashValue,
+                    matching: Hash.Value(_unchecked: key.hashValue),
                     context: key,
                     equals: { (candidate: borrowing Hash.Entry<K, V>, probe: borrowing K) in
                         candidate.key == probe
@@ -167,7 +169,7 @@ extension __Dictionary where S: ~Copyable {
 extension __Dictionary where S: ~Copyable {
 
     @inlinable
-    public mutating func withMutableValue<K: Hash.Key & ~Copyable, V: ~Copyable, R>(
+    public mutating func withMutableValue<K: Swift.Hashable & ~Copyable, V: ~Copyable, R>(
         forKey key: borrowing K,
         _ body: (inout V) -> R
     ) -> R?
@@ -178,7 +180,7 @@ extension __Dictionary where S: ~Copyable {
     {
         guard
             let slot = store.position(
-                matching: key.hashValue,
+                matching: Hash.Value(_unchecked: key.hashValue),
                 context: key,
                 equals: { (candidate: borrowing Hash.Entry<K, V>, probe: borrowing K) in
                     candidate.key == probe
@@ -191,7 +193,7 @@ extension __Dictionary where S: ~Copyable {
     }
 
     @inlinable
-    public mutating func withMutableValue<K: Hash.Key & ~Copyable, V: ~Copyable, R>(
+    public mutating func withMutableValue<K: Swift.Hashable & ~Copyable, V: ~Copyable, R>(
         forKey key: borrowing K,
         _ body: (inout V) -> R
     ) -> R?
@@ -206,7 +208,7 @@ extension __Dictionary where S: ~Copyable {
         store.withUnique { column -> R? in
             guard
                 let slot = column.position(
-                    matching: key.hashValue,
+                    matching: Hash.Value(_unchecked: key.hashValue),
                     context: key,
                     equals: { (candidate: borrowing Hash.Entry<K, V>, probe: borrowing K) in
                         candidate.key == probe
@@ -223,7 +225,7 @@ extension __Dictionary where S: ~Copyable {
 extension __Dictionary where S: ~Copyable {
 
     @inlinable
-    public mutating func removeValue<K: Hash.Key & ~Copyable, V: ~Copyable>(
+    public mutating func removeValue<K: Swift.Hashable & ~Copyable, V: ~Copyable>(
         forKey key: borrowing K
     ) -> V?
     where
@@ -233,7 +235,7 @@ extension __Dictionary where S: ~Copyable {
     {
         guard
             let entry = store.remove(
-                matching: key.hashValue,
+                matching: Hash.Value(_unchecked: key.hashValue),
                 context: key,
                 equals: { (candidate: borrowing Hash.Entry<K, V>, probe: borrowing K) in
                     candidate.key == probe
@@ -246,7 +248,7 @@ extension __Dictionary where S: ~Copyable {
     }
 
     @inlinable
-    public mutating func removeValue<K: Hash.Key & ~Copyable, V: ~Copyable>(
+    public mutating func removeValue<K: Swift.Hashable & ~Copyable, V: ~Copyable>(
         forKey key: borrowing K
     ) -> V?
     where
@@ -260,7 +262,7 @@ extension __Dictionary where S: ~Copyable {
         store.withUnique { column -> V? in
             guard
                 let entry = column.remove(
-                    matching: key.hashValue,
+                    matching: Hash.Value(_unchecked: key.hashValue),
                     context: key,
                     equals: { (candidate: borrowing Hash.Entry<K, V>, probe: borrowing K) in
                         candidate.key == probe
@@ -274,7 +276,7 @@ extension __Dictionary where S: ~Copyable {
     }
 
     @inlinable
-    public mutating func removeAll<K: Hash.Key & ~Copyable, V: ~Copyable>(
+    public mutating func removeAll<K: Swift.Hashable & ~Copyable, V: ~Copyable>(
         keepingCapacity: Bool = true
     )
     where
@@ -286,7 +288,7 @@ extension __Dictionary where S: ~Copyable {
     }
 
     @inlinable
-    public mutating func removeAll<K: Hash.Key, V>(keepingCapacity: Bool = true)
+    public mutating func removeAll<K: Swift.Hashable, V>(keepingCapacity: Bool = true)
     where
         S == Ownership.Shared<
             Hash.Entry<K, V>,
@@ -295,7 +297,7 @@ extension __Dictionary where S: ~Copyable {
             >
         >
     {
-        let capacity: Index.Index<Hash.Entry<K, V>>.Count =
+        let capacity: Tagged<Hash.Entry<K, V>, Cardinal> =
             keepingCapacity ? store.capacity : .zero
         self.store = Ownership.Shared(
             Hash.Indexed<
@@ -305,7 +307,7 @@ extension __Dictionary where S: ~Copyable {
     }
 
     @inlinable
-    public mutating func removeAll<K: Hash.Key & ~Copyable, V: ~Copyable>(
+    public mutating func removeAll<K: Swift.Hashable & ~Copyable, V: ~Copyable>(
         keepingCapacity: Bool = true
     )
     where
@@ -316,7 +318,7 @@ extension __Dictionary where S: ~Copyable {
             >
         >
     {
-        let capacity: Index.Index<Hash.Entry<K, V>>.Count =
+        let capacity: Tagged<Hash.Entry<K, V>, Cardinal> =
             keepingCapacity ? store.capacity : .zero
         self.store = Ownership.Shared(
             Hash.Indexed<
@@ -329,7 +331,7 @@ extension __Dictionary where S: ~Copyable {
 extension __Dictionary where S: ~Copyable {
 
     @inlinable
-    public func forEach<K: Hash.Key & ~Copyable, V: ~Copyable>(
+    public func forEach<K: Swift.Hashable & ~Copyable, V: ~Copyable>(
         _ body: (borrowing K, borrowing V) -> Void
     )
     where
@@ -341,7 +343,7 @@ extension __Dictionary where S: ~Copyable {
     }
 
     @inlinable
-    public func forEach<K: Hash.Key & ~Copyable, V: ~Copyable>(
+    public func forEach<K: Swift.Hashable & ~Copyable, V: ~Copyable>(
         _ body: (borrowing K, borrowing V) -> Void
     )
     where
@@ -361,7 +363,7 @@ extension __Dictionary where S: ~Copyable {
 extension __Dictionary where S: ~Copyable {
 
     @inlinable
-    public func clone<K: Hash.Key, V>() -> Self
+    public func clone<K: Swift.Hashable, V>() -> Self
     where
         S == Hash.Indexed<
             Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear

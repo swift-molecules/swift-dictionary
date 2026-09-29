@@ -26,17 +26,12 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-molecules/swift-storage-memory.git", branch: "main"),
         .package(
             url: "https://github.com/swift-atoms/swift-store.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-molecules/swift-index.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-molecules/swift-hash.git",
+            url: "https://github.com/swift-atoms/swift-index.git",
             branch: "main"
         ),
         .package(
@@ -57,8 +52,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/swift-atoms/swift-storage.git",
-            branch: "main"
-        ),
+            branch: "main", traits: ["Generational", "Memory"]),
         .package(
             url: "https://github.com/swift-atoms/swift-memory.git",
             branch: "main"
@@ -72,9 +66,9 @@ let package = Package(
         .target(
             name: "Dictionary",
             dependencies: [
+                .product(name: "Memory Allocator Protocol", package: "swift-memory-allocation"),
                 .product(name: "Hash Indexed Primitive", package: "swift-hash-table"),
                 .product(name: "Hash Table Primitive", package: "swift-hash-table"),
-                .product(name: "Hash", package: "swift-hash"),
                 .product(
                     name: "Ownership Shared Primitive",
                     package: "swift-ownership-shared"
@@ -86,10 +80,6 @@ let package = Package(
                     package: "swift-buffer-linear"
                 ),
                 .product(name: "Storage", package: "swift-storage"),
-                .product(
-                    name: "Storage Memory",
-                    package: "swift-storage-memory"
-                ),
                 .product(name: "Store", package: "swift-store"),
                 .product(name: "Memory", package: "swift-memory"),
                 .product(
@@ -112,7 +102,9 @@ let package = Package(
         ),
         .testTarget(
             name: "Dictionary Tests",
-            dependencies: ["Dictionary"]
+            dependencies: ["Dictionary",
+                .product(name: "Storage", package: "swift-storage"),
+            ]
         ),
     ],
     swiftLanguageModes: [.v6]

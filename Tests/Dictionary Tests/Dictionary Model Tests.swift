@@ -2,14 +2,12 @@ import Buffer_Linear_Primitive
 import Buffer
 public import Buffer_Test_Support
 import Dictionary
-import Hash
 import Hash_Table_Test_Support
 import Index
 import Memory_Allocator
 import Memory
 import Ordinal
 import Ownership_Shared_Primitive
-import Storage_Memory
 import Storage
 import Tagged
 import Testing
@@ -17,16 +15,16 @@ import Testing
 private typealias HeapStorage<E: ~Copyable> =
     Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E>
 
-private typealias EntryColumn<K: Hash.Key & ~Copyable, V: ~Copyable> =
+private typealias EntryColumn<K: Swift.Hashable & ~Copyable, V: ~Copyable> =
     Hash.Indexed<Buffer<HeapStorage<Hash.Entry<K, V>>>.Linear>
 
-private typealias MoveDictionary<K: Hash.Key & ~Copyable, V: ~Copyable> =
-    Dictionary.Dictionary<K, V>
-private typealias CoWDictionary<K: Hash.Key, V> = __Dictionary<
+private typealias MoveDictionary<K: Swift.Hashable & ~Copyable, V: ~Copyable> =
+    Dictionary::Dictionary<K, V>
+private typealias CoWDictionary<K: Swift.Hashable, V> = __Dictionary<
     Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>
 >
 
-extension Model.Element.Tracked: @retroactive Hash.`Protocol` {
+extension Model.Element.Tracked: @retroactive Swift.Hashable {
 
     public borrowing func hash(into hasher: inout Hasher) {
         hasher.combine(group)
@@ -40,7 +38,7 @@ extension Model.Element.Tracked: @retroactive Hash.`Protocol` {
     }
 }
 
-private struct Key: Hash.`Protocol` {
+private struct Key: Swift.Hashable {
     let id: Int
     let group: Int
 }

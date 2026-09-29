@@ -1,10 +1,10 @@
 public import Hash_Indexed_Primitive
-public import Hash
+public import Hash_Table_Primitive
 
 extension Hash {
 
     @frozen
-    public struct Entry<Key: Hash.Key & ~Copyable, Value: ~Copyable>: ~Copyable {
+    public struct Entry<Key: Swift.Hashable & ~Copyable, Value: ~Copyable>: ~Copyable {
 
         public let key: Key
 
@@ -27,7 +27,7 @@ extension Hash.Entry: Copyable where Key: Copyable, Value: Copyable {}
 
 extension Hash.Entry: Sendable where Key: Sendable & ~Copyable, Value: Sendable & ~Copyable {}
 
-extension Hash.Entry: Hash.`Protocol` where Key: ~Copyable, Value: ~Copyable {
+extension Hash.Entry: Swift.Hashable where Key: ~Copyable, Value: ~Copyable {
 
     @inlinable
     public borrowing func hash(into hasher: inout Hasher) {

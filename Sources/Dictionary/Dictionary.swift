@@ -1,13 +1,15 @@
 public import Buffer_Linear_Primitive
 public import Buffer
 public import Hash_Indexed_Primitive
-import Hash
+public import Hash_Table_Primitive
 public import Index
 public import Memory_Allocator
 public import Memory
 public import Ownership_Shared_Primitive
-public import Storage_Memory
 public import Storage
+public import Cardinal
+public import Tagged
+public import Memory_Allocator_Protocol
 
 @_documentation(visibility: public)
 @frozen
@@ -34,8 +36,8 @@ extension __Dictionary: Sendable where S: Sendable & ~Copyable {}
 extension __Dictionary where S: ~Copyable {
 
     @inlinable
-    public init<K: Hash.Key & ~Copyable, V: ~Copyable>(
-        minimumCapacity: Index.Index<Hash.Entry<K, V>>.Count = .zero
+    public init<K: Swift.Hashable & ~Copyable, V: ~Copyable>(
+        minimumCapacity: Tagged<Hash.Entry<K, V>, Cardinal> = .zero
     )
     where
         S == Hash.Indexed<
@@ -46,8 +48,8 @@ extension __Dictionary where S: ~Copyable {
     }
 
     @inlinable
-    public init<K: Hash.Key, V>(
-        minimumCapacity: Index.Index<Hash.Entry<K, V>>.Count = .zero
+    public init<K: Swift.Hashable, V>(
+        minimumCapacity: Tagged<Hash.Entry<K, V>, Cardinal> = .zero
     )
     where
         S == Ownership.Shared<
@@ -68,8 +70,8 @@ extension __Dictionary where S: ~Copyable {
     }
 
     @inlinable
-    public init<K: Hash.Key & ~Copyable, V: ~Copyable>(
-        minimumCapacity: Index.Index<Hash.Entry<K, V>>.Count = .zero
+    public init<K: Swift.Hashable & ~Copyable, V: ~Copyable>(
+        minimumCapacity: Tagged<Hash.Entry<K, V>, Cardinal> = .zero
     )
     where
         S == Ownership.Shared<
