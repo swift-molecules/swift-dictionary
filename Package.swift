@@ -104,6 +104,8 @@ let package = Package(
             name: "Dictionary Tests",
             dependencies: ["Dictionary",
                 .product(name: "Storage", package: "swift-storage"),
+                .product(name: "Buffer Test Support", package: "swift-buffer"),
+                .product(name: "Hash Table Test Support", package: "swift-hash-table"),
             ]
         ),
     ],
