@@ -6,7 +6,7 @@ public import Memory_Allocator
 public import Memory
 public import Storage
 
-public typealias Dictionary<K: Swift.Hashable & ~Copyable, V: ~Copyable> =
+public typealias Dictionary<K: Swift::Hashable & ~Copyable, V: ~Copyable> =
     __Dictionary<
         Hash.Indexed<
             Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Hash.Entry<K, V>>>.Linear

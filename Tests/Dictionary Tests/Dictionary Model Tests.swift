@@ -15,16 +15,16 @@ import Testing
 private typealias HeapStorage<E: ~Copyable> =
     Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E>
 
-private typealias EntryColumn<K: Swift.Hashable & ~Copyable, V: ~Copyable> =
+private typealias EntryColumn<K: Swift::Hashable & ~Copyable, V: ~Copyable> =
     Hash.Indexed<Buffer<HeapStorage<Hash.Entry<K, V>>>.Linear>
 
-private typealias MoveDictionary<K: Swift.Hashable & ~Copyable, V: ~Copyable> =
+private typealias MoveDictionary<K: Swift::Hashable & ~Copyable, V: ~Copyable> =
     Dictionary::Dictionary<K, V>
-private typealias CoWDictionary<K: Swift.Hashable, V> = __Dictionary<
+private typealias CoWDictionary<K: Swift::Hashable, V> = __Dictionary<
     Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>
 >
 
-extension Model.Element.Tracked: @retroactive Swift.Hashable {
+extension Model.Element.Tracked: @retroactive Swift::Hashable {
 
     public borrowing func hash(into hasher: inout Hasher) {
         hasher.combine(group)
@@ -38,7 +38,7 @@ extension Model.Element.Tracked: @retroactive Swift.Hashable {
     }
 }
 
-private struct Key: Swift.Hashable {
+private struct Key: Swift::Hashable {
     let id: Int
     let group: Int
 }
@@ -71,7 +71,7 @@ private final class Value {
 
 private struct Reference {
     var entries: [(key: Int, group: Int, value: Int)] = []
-    var keys: Swift.Set<Int> = []
+    var keys: Swift::Set<Int> = []
     var graveyard: [(key: Int, group: Int)] = []
 }
 

@@ -17,12 +17,12 @@ import Testing
 private typealias HeapStorage<E: ~Copyable> =
     Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E>
 
-private typealias EntryColumn<K: Swift.Hashable & ~Copyable, V: ~Copyable> =
+private typealias EntryColumn<K: Swift::Hashable & ~Copyable, V: ~Copyable> =
     Hash.Indexed<Buffer<HeapStorage<Hash.Entry<K, V>>>.Linear>
 
-private typealias MoveDictionary<K: Swift.Hashable & ~Copyable, V: ~Copyable> =
+private typealias MoveDictionary<K: Swift::Hashable & ~Copyable, V: ~Copyable> =
     Dictionary::Dictionary<K, V>
-private typealias CoWDictionary<K: Swift.Hashable, V> = __Dictionary<
+private typealias CoWDictionary<K: Swift::Hashable, V> = __Dictionary<
     Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>
 >
 

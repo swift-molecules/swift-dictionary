@@ -1,5 +1,5 @@
 public import Buffer
-public import Index
+internal import Index
 public import Store
 public import Cardinal
 public import Tagged

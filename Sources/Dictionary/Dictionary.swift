@@ -2,7 +2,7 @@ public import Buffer_Linear_Primitive
 public import Buffer
 public import Hash_Indexed_Primitive
 public import Hash_Table_Primitive
-public import Index
+internal import Index
 public import Memory_Allocator
 public import Memory
 public import Ownership_Shared_Primitive
@@ -14,7 +14,6 @@ public import Memory_Allocator_Protocol
 @_documentation(visibility: public)
 @frozen
 public struct __Dictionary<S: ~Copyable>: ~Copyable {
-
     @usableFromInline
     package var store: S
 
@@ -22,7 +21,9 @@ public struct __Dictionary<S: ~Copyable>: ~Copyable {
     public init(store: consuming S) {
         self.store = store
     }
+}
 
+extension __Dictionary where S: ~Copyable {
     @inlinable
     public consuming func take() -> S {
         store
@@ -36,7 +37,7 @@ extension __Dictionary: Sendable where S: Sendable & ~Copyable {}
 extension __Dictionary where S: ~Copyable {
 
     @inlinable
-    public init<K: Swift.Hashable & ~Copyable, V: ~Copyable>(
+    public init<K: Swift::Hashable & ~Copyable, V: ~Copyable>(
         minimumCapacity: Tagged<Hash.Entry<K, V>, Cardinal> = .zero
     )
     where
@@ -48,7 +49,7 @@ extension __Dictionary where S: ~Copyable {
     }
 
     @inlinable
-    public init<K: Swift.Hashable, V>(
+    public init<K: Swift::Hashable, V>(
         minimumCapacity: Tagged<Hash.Entry<K, V>, Cardinal> = .zero
     )
     where
@@ -70,7 +71,7 @@ extension __Dictionary where S: ~Copyable {
     }
 
     @inlinable
-    public init<K: Swift.Hashable & ~Copyable, V: ~Copyable>(
+    public init<K: Swift::Hashable & ~Copyable, V: ~Copyable>(
         minimumCapacity: Tagged<Hash.Entry<K, V>, Cardinal> = .zero
     )
     where

@@ -1,3 +1,3 @@
-public import Dictionary
-public import Dictionary_Standard_Library_Integration
-public import Foundation
+internal import Dictionary
+internal import Dictionary_Standard_Library_Integration
+internal import Foundation

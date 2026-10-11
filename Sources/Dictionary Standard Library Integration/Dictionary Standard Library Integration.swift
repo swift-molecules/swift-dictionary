@@ -1,1 +1,1 @@
-public import Dictionary
+internal import Dictionary
