@@ -1,7 +1,7 @@
 public import Buffer
+public import Cardinal
 internal import Index
 public import Store
-public import Cardinal
 public import Tagged
 
 extension __Dictionary where S: ~Copyable, S: Store.`Protocol` & Buffer.`Protocol` {

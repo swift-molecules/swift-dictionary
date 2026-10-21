@@ -1,13 +1,13 @@
-import Buffer_Linear_Primitive
 import Buffer
+import Buffer_Linear_Primitive
 import Buffer_Test_Support
 import Dictionary
 import Hash_Indexed_Primitive
 import Hash_Table_Primitive
 import Hash_Table_Test_Support
 import Index
-import Memory_Allocator
 import Memory
+import Memory_Allocator
 import Ordinal
 import Ownership_Shared_Primitive
 import Storage
@@ -21,7 +21,7 @@ private typealias EntryColumn<K: Swift::Hashable & ~Copyable, V: ~Copyable> =
     Hash.Indexed<Buffer<HeapStorage<Hash.Entry<K, V>>>.Linear>
 
 private typealias MoveDictionary<K: Swift::Hashable & ~Copyable, V: ~Copyable> =
-    Dictionary::Dictionary<K, V>
+    [K: V]
 private typealias CoWDictionary<K: Swift::Hashable, V> = __Dictionary<
     Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>
 >
