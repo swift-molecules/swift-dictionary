@@ -652,7 +652,7 @@ extension `Dictionary Model`.`Edge Case` {
         var dictionary = CoWDictionary<Key, Value>(
             minimumCapacity: Index<Hash.Entry<Key, Value>>.Count(8)
         )
-        for id in 0..<5 {
+        (0..<5).forEach { id in
             dictionary.insert(
                 key: Key(id: id, group: id / 2),
                 value: Value(id: 100 + id, census: census)
