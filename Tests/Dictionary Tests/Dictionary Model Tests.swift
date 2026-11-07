@@ -591,14 +591,18 @@ private func runFleetStream(seed: UInt64) -> Model.Verdict {
     return verdict
 }
 
-@Suite
-struct `Dictionary Model` {
-    @Suite struct Unit {}
-    @Suite struct `Edge Case` {}
-    @Suite struct Integration {}
+enum `Dictionary Model Tests` {}
+
+extension `Dictionary Model Tests` {
+    @Suite
+    struct `Dictionary Model` {
+        @Suite struct Unit {}
+        @Suite struct `Edge Case` {}
+        @Suite struct Integration {}
+    }
 }
 
-extension `Dictionary Model`.Integration {
+extension `Dictionary Model Tests`.`Dictionary Model`.Integration {
     @Test(arguments: Model.seeds(default: [0xD1C7_0001, 0xD1C7_0002]))
     func `direct stream: keyed doors match the ordered reference; value teardown exact`(
         seed: UInt64
@@ -614,7 +618,7 @@ extension `Dictionary Model`.Integration {
     }
 }
 
-extension `Dictionary Model`.Unit {
+extension `Dictionary Model Tests`.`Dictionary Model`.Unit {
     @Test
     func `upsert keeps the position and the ORIGINAL key instance; the probe key dies`() {
         let census = Model.Census()
@@ -645,7 +649,7 @@ extension `Dictionary Model`.Unit {
     }
 }
 
-extension `Dictionary Model`.`Edge Case` {
+extension `Dictionary Model Tests`.`Dictionary Model`.`Edge Case` {
     @Test
     func `upsert preserves insertion order across the whole walk`() {
         let census = Model.Census()

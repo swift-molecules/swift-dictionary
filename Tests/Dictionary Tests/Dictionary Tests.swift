@@ -26,35 +26,39 @@ private typealias CoWDictionary<K: Swift::Hashable, V> = __Dictionary<
     Ownership.Shared<Hash.Entry<K, V>, EntryColumn<K, V>>
 >
 
-@Suite
-struct `Dictionary Column Law Tests` {
+enum `Dictionary Tests` {}
 
-    @Test
-    func `the shared entry column obeys the seam ledger laws`() {
-        let violations = Seam.Ledger.violations(
-            makeEmpty: {
-                Ownership.Shared(
-                    EntryColumn<Int, Int>(minimumCapacity: Index<Hash.Entry<Int, Int>>.Count(4))
-                )
-            },
-            element: { Hash.Entry(key: $0, value: $0) }
-        )
-        #expect(violations.isEmpty, "\(violations)")
-    }
+extension `Dictionary Tests` {
+    @Suite
+    struct `Dictionary Column Law Tests` {
 
-    @Test
-    func `coherence holds through the dictionary surface`() {
-        var direct = MoveDictionary<Int, Int>(minimumCapacity: 4)
-        var i = 0
-        while i < 16 {
-            direct.insert(key: i &* 3, value: i)
-            i += 1
+        @Test
+        func `the shared entry column obeys the seam ledger laws`() {
+            let violations = Seam.Ledger.violations(
+                makeEmpty: {
+                    Ownership.Shared(
+                        EntryColumn<Int, Int>(minimumCapacity: Index<Hash.Entry<Int, Int>>.Count(4))
+                    )
+                },
+                element: { Hash.Entry(key: $0, value: $0) }
+            )
+            #expect(violations.isEmpty, "\(violations)")
         }
-        _ = direct.removeValue(forKey: 9)
-        _ = direct.removeValue(forKey: 0)
-        direct.insert(key: 6, value: 99)
-        let violations = direct.take().checkCoherence()
-        #expect(violations.isEmpty, "\(violations)")
+
+        @Test
+        func `coherence holds through the dictionary surface`() {
+            var direct = MoveDictionary<Int, Int>(minimumCapacity: 4)
+            var i = 0
+            while i < 16 {
+                direct.insert(key: i &* 3, value: i)
+                i += 1
+            }
+            _ = direct.removeValue(forKey: 9)
+            _ = direct.removeValue(forKey: 0)
+            direct.insert(key: 6, value: 99)
+            let violations = direct.take().checkCoherence()
+            #expect(violations.isEmpty, "\(violations)")
+        }
     }
 }
 
@@ -64,193 +68,199 @@ extension Hash.Indexed<Buffer<HeapStorage<Hash.Entry<Int, Int>>>.Linear> {
     }
 }
 
-@Suite(.serialized)
-struct `Dictionary Core Tests` {
+extension `Dictionary Tests` {
+    @Suite(.serialized)
+    struct `Dictionary Core Tests` {
 
-    @Test
-    func `insert, displaced hand-back, contains, removeValue, counts`() {
-        var d = MoveDictionary<Int, Int>(minimumCapacity: 4)
-        let isEmpty = d.isEmpty
-        #expect(isEmpty)
-        let fresh = d.insert(key: 10, value: 100)
-        #expect(fresh == nil)
-        let displaced = d.insert(key: 10, value: 101)
-        #expect(displaced == 100)
-        d.insert(key: 20, value: 200)
-        d.insert(key: 30, value: 300)
-        let has = d.contains(key: 20)
-        let hasNot = d.contains(key: 40)
-        #expect(has)
-        #expect(!hasNot)
-        let removed = d.removeValue(forKey: 20)
-        #expect(removed == 200)
-        let absent = d.removeValue(forKey: 20)
-        #expect(absent == nil)
-        let n = d.count
-        #expect(n == Index<Hash.Entry<Int, Int>>.Count(2))
-    }
-
-    @Test
-    func `withValue reads; withMutableValue mutates in place behind the stable key`() {
-        var d = MoveDictionary<Int, Int>(minimumCapacity: 4)
-        d.insert(key: 1, value: 10)
-        let read = d.withValue(forKey: 1) { $0 }
-        #expect(read == 10)
-        let missing = d.withValue(forKey: 2) { $0 }
-        #expect(missing == nil)
-        let old = d.withMutableValue(forKey: 1) { value -> Int in
-            let was = value
-            value += 5
-            return was
-        }
-        #expect(old == 10)
-        let now = d.withValue(forKey: 1) { $0 }
-        #expect(now == 15)
-        let absent: Void? = d.withMutableValue(forKey: 9) { $0 += 1 }
-        #expect(absent == nil)
-    }
-
-    @Test
-    func `iteration is insertion-ordered across growth, removal, and replacement`() {
-        var d = MoveDictionary<Int, Int>(minimumCapacity: 2)
-        var i = 0
-        while i < 12 {
-            d.insert(key: i, value: i &* 10)
-            i += 1
-        }
-        _ = d.removeValue(forKey: 5)
-        d.insert(key: 3, value: 999)
-        var keys: [Int] = []
-        d.forEach { key, _ in keys.append(key) }
-        #expect(keys == [0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11])
-        let replaced = d.withValue(forKey: 3) { $0 }
-        #expect(replaced == 999)
-    }
-
-    @Test
-    func `removeAll empties; reuse works; direct clone detaches`() {
-        var d = MoveDictionary<Int, Int>(minimumCapacity: 4)
-        d.insert(key: 1, value: 10)
-        d.insert(key: 2, value: 20)
-        var c = d.clone()
-        _ = c.removeValue(forKey: 1)
-        let mineHas = d.contains(key: 1)
-        let theirsHas = c.contains(key: 1)
-        #expect(mineHas)
-        #expect(!theirsHas)
-        d.removeAll()
-        let isEmpty = d.isEmpty
-        #expect(isEmpty)
-        d.insert(key: 7, value: 70)
-        let v7 = d.withValue(forKey: 7) { $0 }
-        #expect(v7 == 70)
-    }
-}
-
-@Suite(.serialized)
-struct `Dictionary Co W Tests` {
-
-    @Test
-    func `copies share until mutation; inserts detach through the box`() {
-        var a = CoWDictionary<Int, Int>(minimumCapacity: 4)
-        a.insert(key: 1, value: 10)
-        let b = a
-        a.insert(key: 2, value: 20)
-        let mine = a.count
-        let theirs = b.count
-        #expect(mine == Index<Hash.Entry<Int, Int>>.Count(2))
-        #expect(theirs == Index<Hash.Entry<Int, Int>>.Count(1))
-        let aHas2 = a.contains(key: 2)
-        let bHas2 = b.contains(key: 2)
-        #expect(aHas2)
-        #expect(!bHas2)
-    }
-
-    @Test
-    func `value mutation detaches; the sibling keeps its value`() {
-        var a = CoWDictionary<Int, Int>(minimumCapacity: 4)
-        a.insert(key: 1, value: 10)
-        let b = a
-        _ = a.withMutableValue(forKey: 1) { $0 = 11 }
-        let mine = a.withValue(forKey: 1) { $0 }
-        let theirs = b.withValue(forKey: 1) { $0 }
-        #expect(mine == 11)
-        #expect(theirs == 10)
-    }
-
-    @Test
-    func `removal detaches; the sibling keeps the entry; generic clone detaches`() {
-        var a = CoWDictionary<Int, Int>(minimumCapacity: 4)
-        a.insert(key: 1, value: 10)
-        a.insert(key: 2, value: 20)
-        let b = a
-        let removed = a.removeValue(forKey: 1)
-        #expect(removed == 10)
-        let bStillHas = b.contains(key: 1)
-        #expect(bStillHas)
-
-        var c = a.clone()
-        c.insert(key: 9, value: 90)
-        let aHas9 = a.contains(key: 9)
-        let cHas9 = c.contains(key: 9)
-        #expect(!aHas9)
-        #expect(cHas9)
-    }
-
-    @Test
-    func `removeAll detaches to a fresh box; the sibling is untouched`() {
-        var a = CoWDictionary<Int, Int>(minimumCapacity: 4)
-        a.insert(key: 1, value: 10)
-        let b = a
-        a.removeAll()
-        let aEmpty = a.isEmpty
-        let bHas = b.contains(key: 1)
-        #expect(aEmpty)
-        #expect(bHas)
-    }
-}
-
-@Suite(.serialized)
-struct `Dictionary Teardown Tests` {
-
-    @Test
-    func `move-only values flow through and tear down exactly once`() {
-        DictProbe.reset()
-        do {
-            var d = MoveDictionary<Int, DictItem>(minimumCapacity: 4)
-            d.insert(key: 1, value: DictItem(10))
-            d.insert(key: 2, value: DictItem(20))
-            if let displaced: DictItem = d.insert(key: 1, value: DictItem(11)) {
-                let id = displaced.id
-                #expect(id == 10)
-            } else {
-                Issue.record("expected the displaced value")
-            }
-            if let removed: DictItem = d.removeValue(forKey: 2) {
-                let id = removed.id
-                #expect(id == 20)
-            } else {
-                Issue.record("expected the removed value")
-            }
-        }
-        let all = DictProbe.destroyedSorted
-        #expect(all == [10, 11, 20])
-    }
-
-    @Test
-    func `the boxed move-only lane tears down via the box drain`() {
-        DictProbe2.reset()
-        do {
-            var d = __Dictionary<
-                Ownership.Shared<Hash.Entry<Int, DictItem2>, EntryColumn<Int, DictItem2>>
-            >(minimumCapacity: 4)
-            d.insert(key: 7, value: DictItem2(70))
-            d.insert(key: 8, value: DictItem2(80))
+        @Test
+        func `insert, displaced hand-back, contains, removeValue, counts`() {
+            var d = MoveDictionary<Int, Int>(minimumCapacity: 4)
+            let isEmpty = d.isEmpty
+            #expect(isEmpty)
+            let fresh = d.insert(key: 10, value: 100)
+            #expect(fresh == nil)
+            let displaced = d.insert(key: 10, value: 101)
+            #expect(displaced == 100)
+            d.insert(key: 20, value: 200)
+            d.insert(key: 30, value: 300)
+            let has = d.contains(key: 20)
+            let hasNot = d.contains(key: 40)
+            #expect(has)
+            #expect(!hasNot)
+            let removed = d.removeValue(forKey: 20)
+            #expect(removed == 200)
+            let absent = d.removeValue(forKey: 20)
+            #expect(absent == nil)
             let n = d.count
-            #expect(n == Index<Hash.Entry<Int, DictItem2>>.Count(2))
+            #expect(n == Index<Hash.Entry<Int, Int>>.Count(2))
         }
-        let all = DictProbe2.destroyedSorted
-        #expect(all == [70, 80])
+
+        @Test
+        func `withValue reads; withMutableValue mutates in place behind the stable key`() {
+            var d = MoveDictionary<Int, Int>(minimumCapacity: 4)
+            d.insert(key: 1, value: 10)
+            let read = d.withValue(forKey: 1) { $0 }
+            #expect(read == 10)
+            let missing = d.withValue(forKey: 2) { $0 }
+            #expect(missing == nil)
+            let old = d.withMutableValue(forKey: 1) { value -> Int in
+                let was = value
+                value += 5
+                return was
+            }
+            #expect(old == 10)
+            let now = d.withValue(forKey: 1) { $0 }
+            #expect(now == 15)
+            let absent: Void? = d.withMutableValue(forKey: 9) { $0 += 1 }
+            #expect(absent == nil)
+        }
+
+        @Test
+        func `iteration is insertion-ordered across growth, removal, and replacement`() {
+            var d = MoveDictionary<Int, Int>(minimumCapacity: 2)
+            var i = 0
+            while i < 12 {
+                d.insert(key: i, value: i &* 10)
+                i += 1
+            }
+            _ = d.removeValue(forKey: 5)
+            d.insert(key: 3, value: 999)
+            var keys: [Int] = []
+            d.forEach { key, _ in keys.append(key) }
+            #expect(keys == [0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11])
+            let replaced = d.withValue(forKey: 3) { $0 }
+            #expect(replaced == 999)
+        }
+
+        @Test
+        func `removeAll empties; reuse works; direct clone detaches`() {
+            var d = MoveDictionary<Int, Int>(minimumCapacity: 4)
+            d.insert(key: 1, value: 10)
+            d.insert(key: 2, value: 20)
+            var c = d.clone()
+            _ = c.removeValue(forKey: 1)
+            let mineHas = d.contains(key: 1)
+            let theirsHas = c.contains(key: 1)
+            #expect(mineHas)
+            #expect(!theirsHas)
+            d.removeAll()
+            let isEmpty = d.isEmpty
+            #expect(isEmpty)
+            d.insert(key: 7, value: 70)
+            let v7 = d.withValue(forKey: 7) { $0 }
+            #expect(v7 == 70)
+        }
+    }
+}
+
+extension `Dictionary Tests` {
+    @Suite(.serialized)
+    struct `Dictionary Co W Tests` {
+
+        @Test
+        func `copies share until mutation; inserts detach through the box`() {
+            var a = CoWDictionary<Int, Int>(minimumCapacity: 4)
+            a.insert(key: 1, value: 10)
+            let b = a
+            a.insert(key: 2, value: 20)
+            let mine = a.count
+            let theirs = b.count
+            #expect(mine == Index<Hash.Entry<Int, Int>>.Count(2))
+            #expect(theirs == Index<Hash.Entry<Int, Int>>.Count(1))
+            let aHas2 = a.contains(key: 2)
+            let bHas2 = b.contains(key: 2)
+            #expect(aHas2)
+            #expect(!bHas2)
+        }
+
+        @Test
+        func `value mutation detaches; the sibling keeps its value`() {
+            var a = CoWDictionary<Int, Int>(minimumCapacity: 4)
+            a.insert(key: 1, value: 10)
+            let b = a
+            _ = a.withMutableValue(forKey: 1) { $0 = 11 }
+            let mine = a.withValue(forKey: 1) { $0 }
+            let theirs = b.withValue(forKey: 1) { $0 }
+            #expect(mine == 11)
+            #expect(theirs == 10)
+        }
+
+        @Test
+        func `removal detaches; the sibling keeps the entry; generic clone detaches`() {
+            var a = CoWDictionary<Int, Int>(minimumCapacity: 4)
+            a.insert(key: 1, value: 10)
+            a.insert(key: 2, value: 20)
+            let b = a
+            let removed = a.removeValue(forKey: 1)
+            #expect(removed == 10)
+            let bStillHas = b.contains(key: 1)
+            #expect(bStillHas)
+
+            var c = a.clone()
+            c.insert(key: 9, value: 90)
+            let aHas9 = a.contains(key: 9)
+            let cHas9 = c.contains(key: 9)
+            #expect(!aHas9)
+            #expect(cHas9)
+        }
+
+        @Test
+        func `removeAll detaches to a fresh box; the sibling is untouched`() {
+            var a = CoWDictionary<Int, Int>(minimumCapacity: 4)
+            a.insert(key: 1, value: 10)
+            let b = a
+            a.removeAll()
+            let aEmpty = a.isEmpty
+            let bHas = b.contains(key: 1)
+            #expect(aEmpty)
+            #expect(bHas)
+        }
+    }
+}
+
+extension `Dictionary Tests` {
+    @Suite(.serialized)
+    struct `Dictionary Teardown Tests` {
+
+        @Test
+        func `move-only values flow through and tear down exactly once`() {
+            DictProbe.reset()
+            do {
+                var d = MoveDictionary<Int, DictItem>(minimumCapacity: 4)
+                d.insert(key: 1, value: DictItem(10))
+                d.insert(key: 2, value: DictItem(20))
+                if let displaced: DictItem = d.insert(key: 1, value: DictItem(11)) {
+                    let id = displaced.id
+                    #expect(id == 10)
+                } else {
+                    Issue.record("expected the displaced value")
+                }
+                if let removed: DictItem = d.removeValue(forKey: 2) {
+                    let id = removed.id
+                    #expect(id == 20)
+                } else {
+                    Issue.record("expected the removed value")
+                }
+            }
+            let all = DictProbe.destroyedSorted
+            #expect(all == [10, 11, 20])
+        }
+
+        @Test
+        func `the boxed move-only lane tears down via the box drain`() {
+            DictProbe2.reset()
+            do {
+                var d = __Dictionary<
+                    Ownership.Shared<Hash.Entry<Int, DictItem2>, EntryColumn<Int, DictItem2>>
+                >(minimumCapacity: 4)
+                d.insert(key: 7, value: DictItem2(70))
+                d.insert(key: 8, value: DictItem2(80))
+                let n = d.count
+                #expect(n == Index<Hash.Entry<Int, DictItem2>>.Count(2))
+            }
+            let all = DictProbe2.destroyedSorted
+            #expect(all == [70, 80])
+        }
     }
 }
 
@@ -284,16 +294,18 @@ extension DictProbe2 {
     static var destroyedSorted: [Int] { unsafe _destroyed.sorted() }
 }
 
-@Suite
-struct `Dictionary Sendable Tests` {
+extension `Dictionary Tests` {
+    @Suite
+    struct `Dictionary Sendable Tests` {
 
-    @Test
-    func `sendable composes through both columns`() {
-        let a = MoveDictionary<Int, Int>(minimumCapacity: 1)
-        requireSendable(a)
-        let b = CoWDictionary<Int, Int>(minimumCapacity: 1)
-        requireSendable(b)
-        #expect(Bool(true))
+        @Test
+        func `sendable composes through both columns`() {
+            let a = MoveDictionary<Int, Int>(minimumCapacity: 1)
+            requireSendable(a)
+            let b = CoWDictionary<Int, Int>(minimumCapacity: 1)
+            requireSendable(b)
+            #expect(Bool(true))
+        }
     }
 }
 
