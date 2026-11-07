@@ -15,11 +15,6 @@ extension Hash {
             self.key = key
             self.value = value
         }
-
-        @inlinable
-        public consuming func take() -> Value {
-            value
-        }
     }
 }
 
@@ -37,5 +32,13 @@ extension Hash.Entry: Swift::Hashable where Key: ~Copyable, Value: ~Copyable {
     @inlinable
     public static func == (lhs: borrowing Self, rhs: borrowing Self) -> Bool {
         lhs.key == rhs.key
+    }
+}
+
+extension Hash.Entry where Key: ~Copyable, Value: ~Copyable {
+
+    @inlinable
+    public consuming func take() -> Value {
+        value
     }
 }
